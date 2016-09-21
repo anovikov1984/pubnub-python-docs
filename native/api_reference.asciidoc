@@ -1,0 +1,181 @@
+= Python v4.0 API Reference for Realtime Apps
+
+NOTE: These docs are for PubNub 4.0 for Python which is our latest and greatest! For the docs of the
+older versions of the SDK, please check PubNub 3.0 for Python.
+If you have questions about the PubNub for Java SDK, please contact us at support@pubnub.com.
+
+Python V4 complete API reference for building Realtime Applications on PubNub,
+including basic usage and sample code.
+
+== Configuration
+=== Description
+`PNConfiguration` instance is storage for user-provided information which describe further PubNub
+client behaviour. Configuration instance contain additional set of properties which allow to perform
+precise PubNub client configuration.
+
+=== Method(s)
+To create `PNConfiguration` instance you can use the following function in the Python V4 SDK:
+
+[source, python]
+----
+pnconfig = PNConfiguration()
+----
+
+|===
+|Properties | Type | Required | Defaults | Description
+
+|`subscribe_key` | string | Yes | | `subscribe_key` from admin panel
+|`publish_key` | string | Optional | None | `publish_key` from admin panel (only required if publishing)
+|`secret_key` | string | Optional | None | `secret_key`  (only required for modifying/revealing access permissions)
+|`cipher_key` | string | Optional | None | If `cipher_key` is passed, all communications to/from PubNub will be encrypted.
+|`uuid` | string | Optional | SDK generated uuid | `uuid` to be used as a device identifier, a default `uuid` is generated if not passed.
+|`auth_key` | string | Optional | None | `uuid` to be used as a device identifier, a default `uuid` is generated if not passed.
+|`cache_busting` | string | Optional | None | `uuid` to be used as a device identifier, a default `uuid` is generated if not passed.
+|`ssl` | bool | Optional | False | Use `SSL`
+|`connect_timeout` | int | Optional | 5 | How long to wait before giving up connection to client.
+|`subscribe_timeout` | int | Optional | 310 | How long to keep the `subscribe` loop running before disconnect.
+|`non_subscribe_request_timeout` | int | Optional | 10 | On `non subscribe` operations, how long to wait for server response.
+|`filter_expression` | string | Optional | None | Feature to subscribe with a custom filter expression.
+
+|`heartbeat_notification_options` | PNHeartbeatNotificationOptions | Optional | PNHeartbeatNotificationOptions.FAILURES | Heartbeat notifications, by default, the SDK will alert on failed heartbeats (equivalent to: `PNHeartbeatNotificationOptions.FAILURES`).
+Other options such as all heartbeats (`PNHeartbeatNotificationOptions.ALL`) or no heartbeats (`PNHeartbeatNotificationOptions.NONE`) are supported.
+
+|`reconnection_policy` | PNReconnectionPolicy | Optional | PNReconnectionPolicy.NONE | Set to `PNReconnectionPolicy.LINEAR` for automatic reconnects. Use option `PNReconnectionPolicy.NONE` to disable automatic reconnects.
+Use option `PNReconnectionPolicy.EXPONENTIAL` to set exponential retry interval.
+
+|`origin` | string | Optional | `pubsub.pubnub.com` | Custom `origin` if needed
+|`enable_subscribe` | bool | Optional | True | You can disable the `subscribe loop` if you don't need perform subscribe operations. By default `subscribe loop`
+is enabled and extra threads/loops are started. They should be explicitly stopped by `pubnub.stop()` method invocation.
+|===
+
+=== Basic usage
+
+[source, python]
+----
+pn_configuration = PNConfiguration()
+# subscribe_key from admin panel
+pn_configuration.subscribe_key = "my_subscribe_key" // required
+# publish_key from admin panel (only required if publishing)
+pn_configuration.publish_key = "my_publish_key"
+# secret_key (only required for modifying/revealing access permissions)
+pn_configuration.secret_key = "my_secret_key"
+# if cipher_key is passed, all communicatons to/from pubnub will be encrypted
+pn_configuration.cipher_key = "my_cipher_key"
+# UUID to be used as a device identifier, a default UUID is generated
+# if not passsed
+pn_configuration.uuid = "my_custom_uuid"
+# if Access Manager is utilized, client will use this authKey in all restricted
+# requests
+pn_configuration.auth_key = "my_aut_key"
+# use SSL
+pn_configuration.ssl = True
+# how long to wait before giving up connection to client
+pn_configuration.connect_timeout = 100
+# how long to keep the subscribe loop running before disconnect
+pn_configuration.subscribe_timeout = 310
+# on non subscribe operations, how long to wait for server response
+pn_configuration.non_subscribe_timeout = 300
+# PSV2 feature to subscribe with a custom filter expression
+pn_configuration.filter_expression = "such=wow"
+# heartbeat notifications, by default, the SDK will alert on failed heartbeats.
+# other options such as all heartbeats or no heartbeats are supported.
+pn_configuration.heartbeat_notification_options = PNHeartbeatNotificationOptions.All
+----
+
+== Initialization
+Add PubNub to your project using one of the procedures defined under How to Get It.
+
+=== Description
+This function is used for initializing the PubNub Client API context. This function must be
+called before attempting to utilize any API functionality in order to establish account level
+credentials such as `publish_key` and `subscribe_key`.
+
+=== Methods
+To `initialize` PubNub you should instantiate a PubNub instance:
+
+[source, python]
+----
+pubnub = PubNub(my_pnconfig)
+----
+
+|====
+|Parameter | Type | Required | Description
+|pn_configuration | PNConfiguration | Yes | Goto Configuration for more details.
+|====
+
+=== Basic usage
+
+[source, python]
+.Initialize the PubNub cliean API
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = "my_subkey"
+pnconfig.publish_key = "my_pubkey"
+pnconfig.ssl = True
+
+pubnub = PubNub(pnconfig)
+----
+
+=== Returns
+
+It returns the Pubnub instance for invoking PubNub APIs like `publish()`, `subscribe()`, `history()`, `hereNow()`, etc.
+
+=== Other examples
+
+[source, python]
+.1. Initialize a non-secure client
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = "my_subkey"
+pnconfig.publish_key = "my_pubkey"
+pnconfig.ssl = False
+
+pubnub = PubNub(pnconfig)
+----
+
+[source, python]
+.2. Initialization for a Read-Only client (In the case where a client will only read messages and never publish to a channel, you can simply omit the publishKey when initializing the client):
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = "my_subkey"
+
+pubnub = PubNub(pnconfig)
+----
+
+[source, python]
+.3. Specify a custom uuid (Under certain circumstances it useful to use a custom UUID to help in identifying your users):
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = "my_subkey"
+pnconfig.publish_key = "my_pubkey"
+pnconfig.uuid = "my_uuid"
+
+pubnub = PubNub(pnconfig)
+----
+
+[source, python]
+.4. Initializing with SSL Enabled (This examples demonstrates how to enable PubNub Transport Layer Encryption with SSL. Just initialize the client with ssl set to true. The hard work is done, now the PubNub API takes care of the rest. Just subscribe and publish as usual and you are good to go):
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = "my_subkey"
+pnconfig.publish_key = "my_pubkey"
+pnconfig.ssl = True
+
+pubnub = PubNub(pnconfig)
+----
+
+[source, python]
+.5. Initializing with Access Manager (For applications that will administer PAM permissions, the API is initialized with the secretKey as in the following example):
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = "my_subkey"
+pnconfig.publish_key = "my_pubkey"
+pnconfig.secret_key = "my_secretkey"
+pnconfig.ssl = True
+
+pubnub = PubNub(pnconfig)
+----
+
+Now that the pubnub object is instantiated the client will be able to access the PAM functions. The pubnub object will use the `secret_key` to sign all PAM messages to the PubNub Network.
+
+NOTE: Anyone with the `secret_key` can grant and revoke permissions to your app. Never let your `secret_key` be discovered, and to only exchange it / deliver it securely. Only use the `secret_key` on secure server-side platforms.
