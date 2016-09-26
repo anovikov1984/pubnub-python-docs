@@ -603,5 +603,177 @@ pubnub.here_now().channels("my_channel", "demo").include_uuids(True).async(here_
 ----
 
 === Response
-The `hereNow()` operation returns a `PNHereNowResult` which contains the following operations:
+The `here_now()` operation returns a `PNHereNowResult` which contains the following fields:
+|===
+| Field | Type | Description
+| total_channels | int | Total `channels`
+| total_occupancy | int | Total `occupancy`
+| channels | dict | A dict with values of PNHereNowChannelData for each channel. See PNHereNowChannelData for more details.
+|===
 
+`PNHereNowChannelData`:
+|===
+| Field | Type | Description
+| channel_name | str | `channel` name
+| occupancy | int | `occupancy` of the `channel`
+| occupants | list | A list of `PNHereNowOccupantData`, see `PNHereNowOccupantData` for more details.
+|===
+
+`PNHereNowOccupantData`:
+|===
+| Field | Type | Description
+| uuid | str | `uuid` of the user
+| state| dict | `state` of the user.
+|===
+
+=== Other examples
+[source, python]
+.1. Returning State
+----
+envelope = pubnub.here_now().channels("my_channel").\
+    include_uuids(True).include_state(True).sync()
+----
+
+[source, json]
+.Example response
+----
+{
+    "status" : 200,
+    "message" : "OK",
+    "service" : "Presence",
+    "uuids" : [
+        {
+            "uuid" : "myUUID0"
+        },
+        {
+            "state" : {
+                "abcd" : {
+                    "age" : 15
+                }
+            },
+            "uuid" : "myUUID1"
+        },
+        {
+            "uuid" : "b9eb408c-bcec-4d34-b4c4-fabec057ad0d"
+        },
+        {
+            "state" : {
+                "abcd" : {
+                    "age" : 15
+                }
+            },
+            "uuid" : "myUUID2"
+        },
+        {
+            "state" : {
+                "abcd" : {
+                    "age" : 24
+                }
+            },
+            "uuid" : "myUUID9"
+        }
+    ],
+    "occupancy" : 5
+}
+----
+
+[source, python]
+.2. Return Occupancy Only (You can return only the occupancy information for a single channel by specifying the channel and setting uuids to false):
+----
+envelope = pubnub.here_now().channels("my_channel").\
+    include_uuids(False).include_state(False).sync()
+----
+
+[source, json]
+.Example response
+----
+{
+    "channels": {
+        "my_channel": {
+            "occupancy": 3
+        }
+    },
+    "total_channels": 1,
+    "total_occupancy": 3
+}
+----
+
+[source, python]
+.3. Returning uuids and occupancy for all channels (You can return the list of uuids and occupancy for all channels by omitting the channel):
+----
+envelope = pubnub.here_now().include_uuids(True).include_state(False).sync()
+----
+
+[source, json]
+.Example response
+----
+{
+    "total_channels" : 2,
+    "total_occupancy" : 3,
+    "channels" : {
+        "lobby" : {
+            "occupancy" : 1,
+            "uuids" : [
+                "dara01"
+            ]
+        },
+        "game01" : {
+            "occupancy" : 2,
+            "uuids" : [
+                "jason01",
+                "jason02"
+            ]
+        }
+    }
+}
+----
+
+
+[source, python]
+.4. Return `Occupancy` for all channels (You can return only the `occupancy` information (`Global Here Now`) by omitting the `channel name`):
+----
+envelope = pubnub.here_now().include_uuids(True).include_state(True).sync()
+----
+
+[source, json]
+.Example response
+----
+{
+    "channels": {
+        "my_channel": {
+            "occupancy": 3
+        }
+    },
+    "total_channels": 1,
+    "total_occupancy": 3
+}
+----
+
+[source, python]
+.5. Here Now for Channel Groups:
+----
+envelope = pubnub.here_now().channel_groups(['cg1', 'cg2', 'cg3']).\
+    include_uuids(True).include_state(True).sync()
+----
+
+[source, json]
+.Example response
+----
+{
+    "occupancy" : 4,
+    "uuids" : ["123123234t234f34fq3dq", "143r34f34t34fq34q34q3", "23f34d3f4rq34r34rq23q", "w34tcw45t45tcw435tww3"]
+}
+----
+
+== Where Now
+=== Description
+You can obtain information about the current list of a channels to which a uuid is subscribed
+to by calling the `where_now()` function in your application.
+
+=== Method(s)
+To call `where_now()` you can use the following method(s) in the Python V4 SDK:
+
+[source, python]
+----
+pubnub.where_now ... TBD
+----
