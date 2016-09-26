@@ -179,3 +179,429 @@ pubnub = PubNub(pnconfig)
 Now that the pubnub object is instantiated the client will be able to access the PAM functions. The pubnub object will use the `secret_key` to sign all PAM messages to the PubNub Network.
 
 NOTE: Anyone with the `secret_key` can grant and revoke permissions to your app. Never let your `secret_key` be discovered, and to only exchange it / deliver it securely. Only use the `secret_key` on secure server-side platforms.
+
+
+== Publish
+=== Description
+The `publish()` function is used to send a message to all subscribers of a channel. To publish
+a message you must first specify a valid `publish_key` at initialization. A successfully published
+message is replicated across the PubNub Real-Time Network and sent simultaneously to all subscribed clients on a channel.
+Messages in transit can be secured from potential eavesdroppers with SSL/TLS by setting ssl to true during initialization.
+
+NOTE: The same note as in Java V4: https://www.pubnub.com/docs/java/api-reference-sdk-v4#publish_desc
+
+WARNING: Do NOT JSON serialize!:: It is important to note that you should not JSON serialize when sending signals/messages via PUBNUB. Why? Because the serialization is done for you automatically. Instead just pass the full object as the message payload. PubNub takes care of everything for you.
+
+=== Methods
+To `publish` a message you can use the following method(s) in the Python V4 SDK:
+
+[source, python]
+----
+pubnub.publish().channels(string).message(object).should_store(bool).meta(dict).use_post(bool
+----
+
+|====
+|Parameter|Type|Required|Default|Description
+
+|message|object|Yes||The payload
+|channel|string|Yes||Destination of `message`
+|should_store|bool|Optional| `account default` | Store in history
+|meta|object|Optional| None | Meta data object which can be used with the filtering ability
+|use_post|bool|False|Use POST to publish
+|====
+
+=== Basic usage
+
+[source, python]
+----
+def publish_callback(result, status):
+    pass
+    # handle publish result, status always present, result if successful
+    # status.isError to see if error happened
+
+pubnub.publish().channel("my_channel").message(["hello", "there"])\
+        .should_store(True).use_post(True).async(publish_callback)
+----
+
+=== Response
+The `publish()` operation returns a `PNPublishResult` which contains the following fields:
+|====
+| Field | Type | Description
+| timetoken | int | an `int` representation of the time token when the message was published
+|====
+
+=== Other examples
+
+[source, python]
+.Publish with metadata
+----
+def publish_callback(result, status):
+    pass
+    # handle publish result, status always present, result if successful
+    # status.isError to see if error happened
+
+
+pubnub.publish().channel("my_channel").message(["hello", "there"]) \
+    .meta({'name': 'Alex'}).async(publish_callback)
+----
+
+[source, python]
+.Publish dict
+----
+try:
+    envelope = pubnub.publish().channel("my_channel").message({'name': 'Alex', 'online': True}).sync()
+    print("publish timetoken: %d" % envelope.result.timetoken)
+except PubNubException as e:
+    handle_exception(e)
+----
+
+== Subscribe
+=== Description
+
+This function causes the client to create an open TCP socket to the PubNub Real-Time Network and
+begin listening for messages on a specified `channel`. To subscribe to a `channel` the client must send
+the appropriate `subscribe_key` at initialization.
+By default a newly subscribed client will only receive messages published to the channel after
+the `subscribe()` call completes.
+If a client gets disconnected from a channel, it can automatically attempt to reconnect to that
+`channel` and retrieve any available messages that were missed during that period. This can be
+achieved by setting setReconnectionPolicy to `PNReconnectionPolicy.LINEAR`, when initializing
+the client.
+
+=== Methods
+To `Subscribe to a channel` you can use the following method(s) in the Python V4 SDK.
+
+[source, python]
+.Publish dict
+----
+pubnub.subscribe().channels(str|list|tuple).channel_groups(string|list|tuple).with_timetoken(int).with_presence(bool).execuute()
+----
+
+|====
+|Parameter | Type | Required| Description
+| channels | str\|list\|tuple | Optional | Subscribe to `channels`, Either `channel` or `channel_group` is required
+| channel_groups | str\|list\|tuple | Optional | Subscribe to `channel_groups`, Either `channel` or `channel_group` is required
+| timetoken | int | Optional | Pass a timetoken
+| with_presence | bool | Optional | Also subscribe to related presence information
+|====
+
+=== Basic usage
+
+[source, python]
+.Subscribe to a channel
+----
+pubnub.subscribe().channels("my_channel").execute()
+----
+
+NOTE: The response of the call is handled by adding a Listener. Please see the Listeners section for more details. Listeners should be added before calling the method.
+
+=== Response
+NOTE: `PNMessageResult` is returned in the Listeners.
+
+The `subscribe()` operation returns a `PNMessageResult` for messages which contains the following fields:
+
+|====
+| Field | Type | Description
+| message | object | The message sent on `channel`
+| subscribed_channel | str | The channel on which the message was received
+| actual_channel | str | The `channel` or `channel group` on which the message was received
+| timetoken | int | Timetoken for the message.
+| user_metadata | dict | User `metadata`
+|====
+
+The `subscribe()` operation returns a `PNPresenceEventResult` from presence which contains the following operations:
+
+// TODO: review subscribed_channel vs actual_channel
+// TODO: add state field
+|====
+| Field | Type | Description
+| event | string | Events like `join`, `leave`, `timeout`, `state-change`.
+| uuid | string | `uuid` for event
+| timestamp | int | `timestamp` for event
+| occupancy | int | Current `occupancy`
+| subscribed_channel | str | Message has been received on `channel`
+| actual_channel | str | Message has been received on channel group.
+| timetoken | int| `timetoken` of the message
+| user_metadata | dict | User `metadata`
+|====
+
+
+=== Other examples
+
+[source, python]
+.1. Basic subscribe with logging
+----
+import logging
+import pubnub
+
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub, SubscribeListener
+
+pubnub.set_stream_logger('pubnub', logging.DEBUG)
+
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'demo'
+pnconfig.publish_key = 'demo'
+
+pubnub = PubNub(pnconfig)
+
+pubnub.add_listener(SubscribeListener())
+pubnub.subscribe().channels("my_channel").execute()
+----
+
+[source, python]
+.2. Subscribing to more than one channel (It is possible to subscribe to more than one channel over a single TCP socket by taking advantage of Multiplexing feature. See the Multiplexing section for more info on this feature as well as the examples below using a list or an array to specify channel name):
+----
+pubnub.subscribe().channels(["my_channel1", "my_channel2"]).execute()
+----
+
+[source, python]
+.3. Subscribing to a Presence channel (For any given channel there is an associated Presence channel. You can subscribe directly to the channel by appending `-pnpres` to the channel name. For example the channel named `my_channel` would have the presence channel named `my_channel-pnpres`):
+----
+pubnub.subscribe().channels("my_channel").with_presence().execute()
+----
+
+==== Sample responses
+===== Join event
+[source, json]
+----
+{
+    "action": "join",
+    "timestamp": 1345546797,
+    "uuid": "175c2c67-b2a9-470d-8f4b-1db94f90e39e",
+    "occupancy": 2
+}
+----
+===== Join event
+[source, json]
+----
+{
+    "action": "join",
+    "timestamp": 1345546797,
+    "uuid": "175c2c67-b2a9-470d-8f4b-1db94f90e39e",
+    "occupancy": 2
+}
+----
+
+===== Timeout event
+[source, json]
+----
+{
+    "action": "timeout",
+    "timestamp": 1345549797,
+    "uuid": "76c2c571-9a2b-d074-b4f8-e93e09f49bd",
+    "occupancy": 0
+}
+----
+
+===== Custom Presence Event
+[source, json]
+----
+{
+    "action": "state-change",
+    "uuid": "76c2c571-9a2b-d074-b4f8-e93e09f49bd",
+    "timestamp": 1345549797,
+    "data": {
+        "isTyping": true
+    }
+}
+----
+
+[source, python]
+.4. Wildcard subscribe to channels (Wildcard subscribes allow the client to subscribe to multiple channels using wildcard. E.g., if you subscribe to `a.*` you will get all messages for `a.b`, `a.c`, `a.x`. The wildcarded * portion refers to any portion of the channel string name after the `dot (.)`):
+----
+pubnub.subscribe().channels("foo.*").execute()
+----
+
+[source, python]
+.5. Wildcard subscribe to channels (Wildcard subscribes allow the client to subscribe to multiple channels using wildcard. E.g., if you subscribe to `a.*` you will get all messages for `a.b`, `a.c`, `a.x`. The wildcarded * portion refers to any portion of the channel string name after the `dot (.)`):
+----
+pubnub = PubNub(pnconfig)
+
+my_listener = SubscribeListener()
+pubnub.add_listener(my_listener)
+
+pubnub.subscribe().channels("my_channel").execute()
+
+my_listener.wait_for_connect()
+
+state = {'field_a': 'awesome', 'field_b': 10}
+envelope = pubnub.set_state().channels('awesome_channel').\
+    channel_groups('awesome_channel_groups').state(state).sync()
+----
+
+[source, python]
+.6. Subscribe to a channel group:
+----
+pubnub.subscribe().channel_groups("awesome_channel_group").execute()
+----
+
+[source, python]
+.7. Subscribe to a `presence` channel of a channel group:
+----
+pubnub.subscribe().channel_groups("awesome_channel_group").with_presence().execute()
+----
+
+== Unsubscribe
+=== Description
+When subscribed to a single channel, this function causes the client to issue a `leave` from the `channel` and close
+any open socket to the PubNub Network. For multiplexed channels, the specified `channel`(s) will be removed
+and the socket remains open until there are no more channels remaining in the list.
+
+=== Methods
+To `Unsubscribe from a channel` you can use the following method(s) in the Python V4 SDK
+
+[source, python]
+.Publish dict
+----
+pubnub.unsubscribe().channels(str|list|tuple).channel_groups(string|list|tuple).execuute()
+----
+
+|====
+|Parameter | Type | Required| Description
+| channels | str\|list\|tuple | Optional | Subscribe to `channels`, Either `channel` or `channel_group` is required
+| channel_groups | str\|list\|tuple | Optional | Subscribe to `channel_groups`, Either `channel` or `channel_group` is required
+|====
+
+
+=== Basic usage
+
+[source, python]
+.Unsubscribe from a channel:
+----
+pubnub.unsubscribe().channels("my_channel").execute()
+----
+
+NOTE: The response of the call is handled by adding a Listener. Please see the Listeners section for more details. Listeners should be added before calling the method.
+
+=== Response from server
+[source, json]
+.The output below demonstrates the response to a successful call:
+----
+{
+    "action" : "leave"
+}
+----
+
+=== Other examples
+
+[source, python]
+.1. Unsubscribing from multiple channels:
+----
+pubnub.unsubscribe().channels(["my_channel1", "my_channel2").execute()
+----
+
+[source, python]
+.2. Unsubscribing from multiple channel groups:
+----
+pubnub.unsubscribe().channels_groups(["my_group1", "my_group2").execute()
+----
+
+
+== Unsubscribe All
+=== Description
+Unsubscribe from all channels and all channel groups
+
+=== Method
+[source, python]
+.2. Unsubscribing from multiple channel groups:
+----
+pubnub.unsubscribe_all()
+----
+
+=== Returns
+`None`
+
+== Listeners
+=== Description
+You can be notified of connectivity status, message and presence notifications via the listeners.
+Listeners should be added before calling the method. Python SDK v4.0 has two types of
+listeners: `SubscribeCallback` and `SubscribeListener`.
+
+`SubscribeCallback` class is a bare callbacks container. Your should implement `status`, `presence`
+and `message` methods of this class inside you own implementation:
+
+[source, python]
+----
+class MyCallback(SubscribeCallback):
+    def status(self, pubnub, status):
+        if status.operation == PNOperationType.PNSubscribeOperation \
+                and status.category == PNStatusCategory.PNConnectedCategory:
+            print("connected")
+
+    def presence(self, pubnub, presence):
+        pass
+
+    def message(self, pubnub, message):
+        pass
+
+my_listener = MyCallback()
+pubnub.add_listener(my_listener)
+pubnub.subscribe().channel("my_channel").execute()
+pubnub.remove_listener(my_listener)
+----
+
+`SubscribeListener` is an extension of `SubscribeCallback` that contains some extra helpers
+to make work with asynchronous code easier:
+
+[source, python]
+----
+my_listener = SubscribeListener()
+
+pubnub.add_listener(my_listener)
+pubnub.subscribe().channel("my_channel").execute()
+
+my_listener.wait_for_connect()
+print('connected')
+
+pubnub.remove_listener(my_listener)
+----
+
+NOTE: `SubscribeListener` should not be used with hight-performance sections of your app.
+
+== Here Now
+=== Description
+You can obtain information about the current state of a channel including a list of unique
+user-ids currently subscribed to the channel and the total occupancy count of the channel
+by calling the `hereNow()` function in your application.
+
+=== Method(s):
+[source, python]
+----
+pubnub.here_now().channels(str|list|tuple).include_state(bool).include_uuids(bool)
+----
+
+|===
+| Parameter | Type | Required | Defaults | Description
+| channels | str\|list\|tuple | Optional | | The `channels` to get the here now details.
+| channel_groups | str\|list\|tuple | Optional | | The `channel groups` to get the here now details.
+| include_state | bool | Optional | False | If `true`, the response will include the presence states of the users for channels/channelGroups
+| include_uuids | bool | Optional | True | If `true`, the response will include the UUIDs of the connected clients
+|===
+
+=== Basic usage
+
+[source, python]
+.Get a list of uuids subscribed to channel:
+----
+def here_now_callback(result, status):
+    if status.is_error():
+        # handle error
+        return
+
+    for channel_data in result.channels:
+        print("---")
+        print("channel: %s" % channel_data.channel_name)
+        print("occupancy: %s" % channel_data.occupancy)
+
+        print("occupants: %s" % channel_data.channel_name)
+        for occupant in channel_data.occupants:
+            print("uuid: %s, state: %s" % (occupant.uuid, occupant.state))
+
+pubnub.here_now().channels("my_channel", "demo").include_uuids(True).async(here_now_callback)
+----
+
+=== Response
+The `hereNow()` operation returns a `PNHereNowResult` which contains the following operations:
+
