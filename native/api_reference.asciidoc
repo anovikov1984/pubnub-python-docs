@@ -775,5 +775,243 @@ To call `where_now()` you can use the following method(s) in the Python V4 SDK:
 
 [source, python]
 ----
-pubnub.where_now ... TBD
+pubnub.where_now.uuid(str)
+----
+
+|===
+| uuid | str | Optional | `uuid` to get info on
+|===
+
+=== Basic usage
+You simply need to define the uuid and the callback function to be used to send the data to as in the example below.
+
+[source, python]
+.Get a list of channels a uuid is subscribed to
+----
+envelope = pubnub.where_now().sync()
+----
+
+=== Response
+The `where_now()` operation returns a `PNWhereNowResult` which contains the following fields:
+
+|===
+| Field | Type | Description
+| channels | list | The list of `channels` where the `UUID` is present
+|===
+
+=== Other examples
+[source, python]
+----
+envelope = pubnub.where_now().uuid('some-other-uuid').sync()
+----
+
+== User State
+=== Description
+The state API is used to set/get key/value pairs specific to a subscriber `uuid`.
+
+State information is supplied as a JSON object of key/value pairs.
+
+NOTE: Presence state must be expressed as a `dict`. When calling `set_state`, be sure to supply an initialized `dict` which can be serialized.
+
+=== Methods
+
+// NOTICE: thiere is no `uuid` setter in set_state since we decided to disable this option so far
+
+[source, python]
+----
+pubnub.set_state().channels(str|list|tuple).channel_groups(str|list|tuple).state(dict).sync()
+----
+
+|===
+| Parameter | Type | Required | Description
+| channels | str\|list\|tuple | Optional | `channels` to set `state`
+| channel_groups | str\|list\|tuple | Optional | `channel groups` to set `state`
+| state | dict | Optional | `state` to set
+|===
+
+
+[source, python]
+----
+pubnub.set_state().channels(str|list|tuple).channel_groups(str|list|tuple).uuid(str).sync()
+----
+
+|===
+| Parameter | Type | Required | Description
+| channels | string\|list\|tuple | Optional | `channels` to set `state`
+| channel_groups | string\|list\|tuple | Optional | `channel groups` to set `state`
+| uuid | str | Optional | `uuid` to get state on
+|===
+
+=== Basic usage
+
+[source, python]
+.Set state:
+----
+my_state = {'age': 20}
+envelope = pubnub.set_state().channels(['ch1', 'ch2', 'ch3']).state(my_state).sync()
+----
+
+[source, python]
+.Get state:
+----
+envelope = pubnub.get_state().channels(['ch1', 'ch2', 'ch3']).uuid('such_uuid').sync()
+----
+
+=== Response
+The `set_state()` operation returns a `PNSetStateResult` which contains the following fields:
+
+|===
+| Field | Type | Description
+| state | dict | dict  of UUIDs and the user states.
+|===
+
+The `get_state()` operation returns a `PNGetStateResult` which contains the following fields:
+
+|===
+| Field | Type | Description
+| channels | dict | dict  of `channels` and the user states.
+|===
+
+=== Other examples
+
+[source, python]
+.Set state for channels in a `channel group`:
+----
+my_state = {'age': 20}
+envelope = pubnub.set_state().channel_gorups(['gr1', 'gr2', 'gr3']).state(my_state).sync()
+----
+
+== Grant
+=== Description
+// The same description as in Java V4.0 docs
+
+=== Methods
+To `Grant Permissions on a Channel` you can use the following method(s) in the Python V4 SDK
+
+|===
+| Paraeter | Type | Required | Defaults | Description
+| auth_keys | str\|list\|tuple | Optional | | `auth keys`
+| channels | str\|list\|tuple | Optional | | `channels` to grant access
+| channel_groups | str\|list\|tuple | Optional | | `channel groups` to grant access
+| read | bool| Optional | False | `read` permissions
+| write | bool| Optional | False | `write` permissions
+| manage | bool| Optional | False | `manage` permissions
+| ttl | int | Optional | None | `time to live` for permissions to be valid
+|===
+
+=== Basic usage
+
+[source, python]
+.Grant_PAM_Permissions_for_channel_and_auth_key
+----
+pubnub.grant().channels(["ch1", "ch2", "ch3"]).\
+    channel_groups(["cg1", "cg2"]).\
+    auth_keys(["key1", "key2"]).\
+    read(True).write(True).manage(True).\
+    sync()
+----
+
+=== Response
+
+The `grant()` operation returns a `PNAccessManagerGrantResult` which contains the following fields:
+|===
+| Field | Type | Description
+| level | str | Permissions level, one of `subkey`, `subkey+auth`, `channel`, 'channel-group',
+ channel-group+auth' level
+| ttl | int | `ttl` of grant
+| subscribe_key| string | The `subscribe key`
+| channels | dict | Access rights per channel. See `PNAccessManagerChannelData` for more details.
+| groups | dict | Access rights per group. See `PNAccessManagerGroupData` for more details.
+| read_enabled | bool | subkey level `read` permissions
+| write_enabled| bool | subkey level `write` permissions
+| manage_enabled | bool | subkey level `manage` permissions
+| ttl | int | Time to live value
+|===
+
+`PNAccessManagerChannelData` and `PNAccessManagerGroupData` has the same fields structure.
+|===
+| Field | Type | Description
+| auth_keys | list | Access rights per auth-key. See `PNAccessManagerKeyData` for more details.
+| name | str | Channel or group `name`
+| read_enabled | bool | Channel or group level `read` permissions
+| write_enabled| bool | Channel or group level `write` permissions
+| manage_enabled | bool | Channel or group level `manage` permissions
+| ttl | int | Time to live value
+|===
+
+`PNAccessManagerKeyData`:
+|===
+| Field | Type | Description
+| read_enabled | bool | auth-key read permissions
+| write_enabled| bool | auth-key read permissions
+| manage_enabled | bool | auth-key read permissions
+| ttl | int | Time to live value
+|===
+
+`read`, `write` and `manage` permissions has 3 states:
+
+. `true` if `enabled`
+. `false` if `disabled`
+. `None` if `not explicitly set`
+
+
+=== Other examples
+[source, python]
+.1. Grant subscribe privileges to all users on all `channel(s)` with default ttl (`1440` minutes):
+----
+envelope = pubnub.grant().read(True).write(True).sync()
+----
+
+[source, python]
+.2. Allow subscribe and publish to a specific grant subscribe and publish to a specific `channel` for all users (no auth_key required) with default ttl (`1440` minutes):
+----
+envelope = pubnub.grant().channels("my_channel").read(True).write(True).sync()
+----
+
+[source, python]
+.3. Grant subscribe access to a channel only for clients with a specific auth_key with a 5 minute ttl:
+----
+envelope = pubnub.grant().channels("my_channel").read(False).write(True).\
+    auth_keys("my_ro_authkey").ttl(5).sync()
+----
+
+[source, python]
+.4. Allow access to a specific channel for presence:
+----
+envelope = pubnub.grant().\
+    channels("my_channel-pnpres").read(True).write(True).sync()
+----
+
+[source, python]
+.5. Grant PAM Permissions for channel group:
+----
+envelope = pubnub.grant().\
+    channel_groups(["cg1", "cg2", "cg3"]).\
+    auth_keys(["auth1", "auth2", "auth3"]).\
+    read(True).write(True).manage(True).\
+    ttl(12237).\
+    .sync()
+----
+
+== Adding Channels to Channel Group
+=== Description
+This function adds a channel to a channel group.
+
+== Methods
+[source, python]
+.Grant_PAM_Permissions_for_channel_and_auth_key
+----
+pubnub.add_channel_to_channel_group().
+----
+
+=== Basic usage
+
+[source, python]
+.Grant_PAM_Permissions_for_channel_and_auth_key
+----
+pubnub.grant().channels(["ch1", "ch2", "ch3"]).\
+    channel_groups(["cg1", "cg2"]).\
+    auth_keys(["key1", "key2"]).\
+    read(True).write(True).manage(True).\
+    sync()
 ----
