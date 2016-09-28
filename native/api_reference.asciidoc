@@ -815,7 +815,7 @@ NOTE: Presence state must be expressed as a `dict`. When calling `set_state`, be
 
 === Methods
 
-// NOTICE: thiere is no `uuid` setter in set_state since we decided to disable this option so far
+// NOTICE: there is no `uuid` setter in set_state since we decided to disable this option so far
 
 [source, python]
 ----
@@ -999,19 +999,105 @@ This function adds a channel to a channel group.
 
 == Methods
 [source, python]
-.Grant_PAM_Permissions_for_channel_and_auth_key
 ----
-pubnub.add_channel_to_channel_group().
+pubnub.add_channel_to_channel_group().channels(str|list|tuple).\
+    group(str)
 ----
+
+|===
+| Parameter | Type | Required | Description
+| channels | str|list|tuple | Yes | `channels` to add to the channel group
+| channel_group | str | Yes | The `channel group` to add the channels to
+|===
 
 === Basic usage
 
 [source, python]
-.Grant_PAM_Permissions_for_channel_and_auth_key
+.Adding channels:
 ----
-pubnub.grant().channels(["ch1", "ch2", "ch3"]).\
-    channel_groups(["cg1", "cg2"]).\
-    auth_keys(["key1", "key2"]).\
-    read(True).write(True).manage(True).\
+pubnub.add_channel_to_channel_group().\
+    channels(["ch1", "ch2"]).\
+    channel_group("cg1").\
     sync()
+----
+
+
+== Listing Channels in Channels Group
+=== Description
+This function lists all the channels of the channel group.
+
+== Methods
+Listing Channels is accomplished by using the following method(s) in the Python V4 SDK:
+[source, python]
+----
+pubnub.list_channels_in_channel_group().group(str)
+----
+
+|===
+| Parameter | Type | Required | Description
+| channel_group | str | Yes | The `channel group` to fetch channels
+|===
+
+=== Basic usage
+
+[source, python]
+.Listing channels:
+----
+pubnub.list_channels_in_channel_group().\
+    channel_group("cg1").sync()
+----
+
+== Removing Channels from Channels Group
+=== Description
+This function removes the channels from the channel group.
+
+== Methods
+Removing Channels is accomplished by using the following method(s) in the Python V4 SDK:
+
+[source, python]
+----
+pubnub.list_channels_in_channel_group().group(str)
+----
+
+|===
+| Parameter | Type | Required | Description
+| channels | str|list|tuple | Yes | `channels` remove from the channel group.
+| channel_group | str | Yes | The `channel group` to remove the channels from.
+|===
+
+=== Basic usage
+
+[source, python]
+.Removing channels:
+----
+pubnub.remove_channel_from_channel_group().\
+    channels(["ch1", "ch2"]).\
+    channel_group("cg1").\
+    sync()
+----
+
+== Deleting Channel Group
+=== Description
+This function removes the channel group.
+
+== Methods
+Deleting Channel Group is accomplished by using the following method(s) in the Python V4 SDK:
+
+[source, python]
+----
+pubnub.remove_channel_group().group(str)
+----
+
+|===
+| Parameter | Type | Required | Description
+| channel_group | str | Yes | The `channel group` to remove
+|===
+
+=== Basic usage
+
+[source, python]
+.Deleting a Channel Group:
+----
+pubnub.remove_channel_group().\
+    channel_group("cg1").sync()
 ----

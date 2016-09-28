@@ -25,11 +25,19 @@ def grant_handler(result, status):
     print(result)
 
 
-pubnub.add_channel_to_channel_group()
+pubnub.add_channel_to_channel_group().\
+    channels(["ch1", "ch2"]).\
+    channel_group("cg1").\
+    sync()
 
+pubnub.list_channels_in_channel_group().\
+    channel_group("cg1").\
+    sync()
 
+pubnub.remove_channel_from_channel_group().\
+    channels(["ch1", "ch2"]).\
+    channel_group("cg1").\
+    sync()
 
-
-
-
-
+pubnub.remove_channel_group().\
+    channel_group("cg1").sync()
