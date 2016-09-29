@@ -1,0 +1,83 @@
+= Python V4 Presence Tutorial for Realtime Apps
+
+[source,python]
+.Setting uuid
+----
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'demo'
+pnconfig.publish_key = 'demo'
+pnconfig.uuid = 'Stephen'
+
+pubnub = PubNub(pnconfig)
+----
+
+[source,python]
+.Receiving Presence Join, Leave, and Timeout Events in realtime
+----
+pubnub.subscribe()\
+    .channels("my_channel")\
+    .with_presence()\
+    .execute()
+----
+
+[source,python]
+.Here Now
+----
+def here_now_callback(result, status):
+    if status.is_error():
+        # handle error
+        return
+
+    for channel_data in result.channels:
+        print("---")
+        print("channel: %s" % channel_data.channel_name)
+        print("occupancy: %s" % channel_data.occupancy)
+
+        print("occupants: %s" % channel_data.channel_name)
+        for occupant in channel_data.occupants:
+            print("uuid: %s, state: %s" % (occupant.uuid, occupant.state))
+
+pubnub.here_now().channels(['cool_channel1', 'cool_channel2']).include_uuids(True).async(here_now_callback)
+----
+
+TODO: raneame `hereNow()` => `here_now()`
+
+
+[source,python]
+.Global Here Now
+----
+pubnub.here_now()\
+    .include_state(True)\
+    .include_uuids(True)\
+    .sync()
+----
+
+
+[source,python]
+.Where Now
+----
+pubnub.where_now().sync()
+----
+
+[source,python]
+.Get State
+----
+pubnub.get_state()\
+    .channels("my_channel")\
+    .uuid("jbonham")\
+    .sync()
+----
+
+
+[source,python]
+.Set State
+----
+pubnub.set_state()\
+    .channels("my_channel")\
+    .state({"full_name": "James Patrick Page"})\
+    .uuid("jbonham")\
+    .sync()
+----
+
+WARNING: there is no code for the next snippet since there is no way to subscribe and set state in a single call in python
