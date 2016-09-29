@@ -59,3 +59,15 @@ pubnub.set_state()\
     .state({"full_name": "James Patrick Page"})\
     .uuid("jbonham")\
     .sync()
+
+
+#
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'demo'
+pnconfig.publish_key = 'demo'
+pnconfig.set_presence_timeout_with_custom_interval(320, 20)
+
+pubnub = PubNub(pnconfig)
+
+#

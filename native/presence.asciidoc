@@ -1,5 +1,10 @@
 = Python V4 Presence Tutorial for Realtime Apps
 
+
+TODO: rename `hereNow()` => `here_now()`
+TODO: rename `whereNow()` => `where_now()`
+
+
 [source,python]
 .Setting uuid
 ----
@@ -41,8 +46,6 @@ def here_now_callback(result, status):
 pubnub.here_now().channels(['cool_channel1', 'cool_channel2']).include_uuids(True).async(here_now_callback)
 ----
 
-TODO: raneame `hereNow()` => `here_now()`
-
 
 [source,python]
 .Global Here Now
@@ -81,3 +84,37 @@ pubnub.set_state()\
 ----
 
 WARNING: there is no code for the next snippet since there is no way to subscribe and set state in a single call in python
+
+[source,python]
+.Optimizing timeout events with heartbeat tuning #1
+----
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'demo'
+pnconfig.publish_key = 'demo'
+pnconfig.uuid = 'Stephen'
+
+pubnub = PubNub(pnconfig)
+----
+
+[source,python]
+.Optimizing timeout events with heartbeat tuning #2
+----
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'demo'
+pnconfig.publish_key = 'demo'
+pnconfig.set_presence_timeout(310)
+
+pubnub = PubNub(pnconfig)
+----
+
+[source,python]
+.Optimizing timeout events with heartbeat tuning #3
+----
+pnconfig.subscribe_key = 'demo'
+pnconfig.publish_key = 'demo'
+pnconfig.set_presence_timeout_with_custom_interval(320, 20)
+
+pubnub = PubNub(pnconfig)
+----
