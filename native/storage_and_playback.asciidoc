@@ -1,0 +1,55 @@
+= Java V4 Storage & Playback Tutorial for Realtime Apps
+
+[source,python]
+.Publish some messages
+----
+for i in range(0, 500):
+    envelope = pubnub.publish()\
+        .message(['message#', i])\
+        .channel('history_channel')\
+        .should_store(True)\
+        .sync()
+
+    print("%d: %s" % (i, envelope.status.is_error()))
+----
+
+[source,python]
+.Pulling from storage with a simple history() call
+----
+envelope = pubnub.history()\
+    .channel("history_channel")\
+    .count(100)\
+    .sync()
+----
+
+
+[source,python]
+.Paging
+----
+envelope = pubnub.history()\
+    .channel("history_channel")\
+    .count(2)\
+    .sync()
+----
+
+[source,python]
+.Retreiving from a time interval
+----
+envelope = pubnub.history()\
+    .channel("history_channel")\
+    .count(100) \
+    .start(13847168620721752)\
+    .end(13847168819178600)\
+    .sync()
+----
+
+[source,python]
+.Include timetoken into history response
+----
+envelope = pubnub.history()\
+    .channel("history_channel")\
+    .count(100) \
+    .include_timetoken(True)\
+    .sync()
+----
+
