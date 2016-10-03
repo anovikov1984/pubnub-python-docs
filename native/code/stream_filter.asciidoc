@@ -1,0 +1,201 @@
+= Stream Filtering Tutorial for Python V4
+
+[source,python]
+.Publish with meta
+----
+meta = {
+    'my': 'meta',
+    'name': 'PubNub'
+}
+
+pubnub.publish().channel('ch1').meta(meta).message('hello').sync()
+----
+
+[source,python]
+.Subscribing with filtering
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "filter == expression"
+pubnub = PubNub(pnconfig)
+----
+
+[source,python]
+.Example #1-1
+----
+meta = {
+    'language': 'english',
+}
+
+pubnub.publish().channel('ch1').meta(meta).message('Hi!').sync()
+----
+
+[source,python]
+.Example #1-2
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "language == 'english'"
+pubnub = PubNub(pnconfig)
+----
+
+[source,python]
+.Example #1-3
+----
+meta = {
+    'language': 'french',
+}
+
+pubnub.publish().channel('ch1').meta(meta).message('Bonjour').sync()
+----
+
+[source,python]
+.Example #2-1
+----
+meta = {
+    'language': 'english',
+}
+
+pubnub.publish().channel('ch1').meta(meta).message('Hi!').sync()
+----
+
+[source,python]
+.Example #2-2
+----
+meta = {
+    'language': 'french',
+}
+
+pubnub.publish().channel('ch1').meta(meta).message('Bonjour').sync()
+----
+
+[source,python]
+.Example #2-3
+----
+meta = {
+    'language': 'spanish',
+}
+
+pubnub.publish().channel('ch1').meta(meta).message('Hola').sync()
+----
+
+[source,python]
+.Example #2-4
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "('french', 'english') contains language"
+pubnub = PubNub(pnconfig)
+----
+
+
+[source,python]
+.Example #3-1
+----
+meta = {
+    'language': 'english',
+}
+
+pubnub.publish().channel('ch1').meta(meta).message('Hi!').sync()
+----
+
+[source,python]
+.Example #3-2
+----
+meta = {
+    'language': 'french',
+}
+
+pubnub.publish().channel('ch1').meta(meta).message('Bonjour').sync()
+----
+
+[source,python]
+.Example #3-3
+----
+meta = {
+    'language': 'spanish',
+}
+
+pubnub.publish().channel('ch1').meta(meta).message('Hola').sync()
+----
+
+[source,python]
+.Example #3-4
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "language != 'spanish'"
+pubnub = PubNub(pnconfig)
+----
+
+[source,python]
+.Example #4-1
+----
+meta = {
+    'price': '99.75',
+    'channel': 'AAPL'
+}
+
+pubnub.publish().channel('AAPL').meta(meta).message('99.75').sync()
+----
+
+[source,python]
+.Example #4-2
+----
+meta = {
+    'price': '100.00',
+    'channel': 'AAPL'
+}
+
+pubnub.publish().channel('AAPL').meta(meta).message('100.00').sync()
+----
+
+[source,python]
+.Example #4-3
+----
+meta = {
+    'price': '15.50',
+    'channel': 'GOOG'
+}
+
+pubnub.publish().channel('AAPL').meta(meta).message('99.75').sync()
+----
+
+[source,python]
+.Example #4-4
+----
+meta = {
+    'price': '14.95',
+    'channel': 'GOOG'
+}
+
+pubnub.publish().channel('AAPL').meta(meta).message('100.00').sync()
+----
+
+[source,python]
+.Example #4-5
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "(price > 100.00 && channel == 'AAPL') || (price < 15.00 && channel == 'GOOG')"
+pubnub = PubNub(pnconfig)
+----
+
+[source,python]
+.Example #5-1
+----
+meta = {
+    'temperature': '60'
+}
+
+pubnub.publish().channel('ch1').meta(meta).message('Hi!').sync()
+----
+
+[source,python]
+.Example #5-2
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "temperature > 50"
+pubnub = PubNub(pnconfig)
+----
