@@ -1,7 +1,5 @@
 import logging
 
-import time
-
 import asyncio
 from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub_asyncio import PubNubAsyncio
