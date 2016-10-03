@@ -45,7 +45,7 @@ def operations_level3():
     envelope = pubnub.grant()\
         .read(True)\
         .write(False)\
-        .channel('public_chat')\
+        .channels('public_chat')\
         .ttl(60)\
         .sync()
 
@@ -56,7 +56,7 @@ def operations_level4():
     envelope = pubnub.grant()\
         .read(True)\
         .write(True)\
-        .channel('public_chat')\
+        .channels('public_chat')\
         .auth_keys('authenticateduser')\
         .ttl(60)\
         .sync()
