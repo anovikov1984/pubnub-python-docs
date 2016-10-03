@@ -1,0 +1,135 @@
+= Java V4 Security with Access Control, AES & TLS/SSL encryption for Realtime Apps
+
+TODO: rename 'secretKey' => 'secret_key'
+TODO: rename 'cipherKey' => 'cipher_key'
+TODO: rename 'setSecure' => 'ssl' < in python it's not a method but a field
+
+
+[source,python]
+.To initialize with the secret key:
+----
+pnconfig = PNConfiguration()
+
+pnconfig.publish_key = "my_publish_key"
+pnconfig.subscribe_key = "my_subscribe_key"
+pnconfig.secret_key = "my_secret_key"
+pnconfig.ssl = True
+
+pubnub = PubNubAsyncio(pnconfig)
+----
+
+
+[source,python]
+.To initialize with the secret key #2:
+----
+pnconfig = PNConfiguration()
+pnconfig.auth_key = "my_authkey"
+----
+
+[source,python]
+.PubNub Access Manager - Administrative-side Configuration:
+----
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = "my_subscribe_key"
+pnconfig.secret_key = "my_secret_key"
+
+pubnub = PubNubAsyncio(pnconfig)
+----
+
+[source,python]
+.Pam operations level #2
+----
+envelope = await pubnub.revoke().future()
+----
+
+[source,python]
+.Pam operations level #3
+----
+envelope = await pubnub.grant()\
+    .read(True)\
+    .write(False)\
+    .channels('public_chat')\
+    .ttl(60)\
+    .future()
+----
+
+[source,python]
+.Pam operations level #4
+----
+envelope = await pubnub.grant()\
+    .read(True)\
+    .write(True)\
+    .channels('public_chat')\
+    .auth_keys('authenticateduser')\
+    .ttl(60)\
+    .future()
+----
+
+
+
+[source,python]
+.Handling permissions denied error
+----
+class MyListener(SubscribeCallback):
+    def presence(self, pubnub, presence):
+        pass
+
+    def message(self, pubnub, message):
+        pass
+
+    def status(self, pubnub, status):
+        if status.is_error():
+            if status.category == PNStatusCategory.PNAccessDeniedCategory:
+                print("handle permissions here")
+
+my_listener = MyListener()
+pubnub.add_listener(my_listener)
+
+pubnub.subscribe().channels("private_chat").execute()
+----
+
+
+[source,python]
+.Grant access to manage CG
+----
+envelope = await pubnub.grant()\
+    .manage(True)\
+    .channel_groups(['cg1', 'cg2', 'cg3'])\
+    .auth_keys(['key1', 'key2', 'key3'])\
+    .ttl(60)\
+    .future()
+----
+
+[source,python]
+.Revoke access to CG
+----
+envelope = await pubnub.revoke()\
+    .channel_groups(['cg1', 'cg2', 'cg3'])\
+    .auth_keys(['key1', 'key2', 'key3'])\
+    .future()
+----
+
+[source,python]
+.Message layer encryption AES256
+----
+pnconfig = PNConfiguration()
+
+pnconfig.publish_key = "my_pub_key"
+pnconfig.subscribe_key = "my_sub_key"
+pnconfig.cipher_key = "my_cipher_key"
+
+pubnub = PubNubAsyncio(pnconfig)
+----
+
+[source,python]
+.TLS/SSL
+----
+pnconfig = PNConfiguration()
+
+pnconfig.publish_key = "my_pub_key"
+pnconfig.subscribe_key = "my_sub_key"
+pnconfig.ssl = True
+
+pubnub = PubNubAsyncio(pnconfig)
+----
