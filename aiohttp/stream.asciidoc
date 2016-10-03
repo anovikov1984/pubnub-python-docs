@@ -1,0 +1,67 @@
+= Java V4 Stream Controller Tutorial for Realtime Apps (only snippets)
+
+=== CHANNEL MULTIPLEXING CODE SAMPLES
+
+[source,python]
+.SUBSCRIBING BY SPECIFYING CHANNEL AS AN ARRAY
+----
+pubnub.subscribe().channels(["my_channel1","my_channel2"]).execute();
+----
+
+[source,python]
+.Pass an array of channels to unsubscribe
+----
+pubnub.unsubscribe().channels(["my_channel1","my_channel2"]).execute();
+----
+
+[source,python]
+.Wildcard subscribe
+----
+pubnub.subscribe().channels("foo.*").execute();
+----
+
+[source,python]
+.Defining the channel group
+----
+await pubnub.add_channel_to_channel_group()\
+    .group(channel_group)\
+    .channels("wife")\
+    .future()
+----
+
+[source,python]
+----
+await pubnub.add_channel_to_channel_group()\
+    .group(channel_group)\
+    .channels(["son", "daughter"])\
+    .future()
+----
+
+[source,python]
+.Subscribe to the channel group
+----
+pubnub.subscribe().channel_groups(channel_group).execute()
+----
+
+[source,python]
+.Receiving channel groups presence messages
+----
+pubnub.subscribe().channel_groups(["cg1", "cg2"]).with_presence().execute()
+----
+
+[source,python]
+.Removing a channel from a channel group
+----
+await pubnub.remove_channel_from_channel_group()\
+    .group(channel_group)\
+    .channels(["son", "daughter"])\
+    .future()
+----
+
+[source,python]
+.Remove channel group by name
+----
+await pubnub.remove_channel_group()\
+    .group(channel_group)\
+    .future()
+----
