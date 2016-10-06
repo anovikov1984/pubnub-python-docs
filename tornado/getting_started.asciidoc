@@ -1,0 +1,316 @@
+= PubNub Python  SDK 4.0.0.beta1
+
+NOTE: These docs are for PubNub 4.0 for Python which is our latest and greatest! For the docs of the
+older versions of the SDK, please check PubNub 3.0 for Python.
+If you have questions about the PubNub for Java SDK, please contact us at support@pubnub.com.
+
+===== The simplest way to get started is to install PubNub Python SDK via pypi:
+[source, sh]
+----
+pip install pubnub>=4.0.1.beta
+----
+
+===== Get Code: git
+[source, sh]
+----
+git clone https://github.com/pubnub/python && cd python/pythonCopy
+----
+
+===== Get Code: Source
+
+[source, sh]
+----
+https://github.com/pubnub/python/tree/master/python
+----
+
+'''
+
+== Hello world
+
+[source, python]
+----
+@gen.coroutine
+def main():
+    def my_publish_callback(future):
+        # Check whether request successfully completed or not
+        exception = future.exception()
+        if exception is None:
+            envelope = future.result()
+            pass  # Message successfully published to specified channel.
+        else:
+            pass  # Handle message publish error. Check 'category' property to find out possible issue
+            # because of which request did fail.
+            # Request can be resent using: [status retry];
+
+    class MySubscribeCallback(SubscribeCallback):
+        def presence(self, pubnub, presence):
+            pass  # handle incoming presence data
+
+        def status(self, pubnub, status):
+            if status.category == PNStatusCategory.PNUnexpectedDisconnectCategory:
+                pass  # This event happens when radio / connectivity is lost
+
+            elif status.category == PNStatusCategory.PNConnectedCategory:
+                # Connect event. You can do stuff like publish, and know you'll get it.
+                # Or just use the connected event to confirm you are subscribed for
+                # UI / internal notifications, etc
+                pubnub.ioloop.add_future(
+                    pubnub.publish().channel("awesomeChannel").message("hello!!").future(),
+                    my_publish_callback
+                )
+            elif status.category == PNStatusCategory.PNReconnectedCategory:
+                pass
+                # Happens as part of our regular operation. This event happens when
+                # radio / connectivity is lost, then regained.
+            elif status.category == PNStatusCategory.PNDecryptionErrorCategory:
+                pass
+                # Handle message decryption error. Probably client configured to
+                # encrypt messages and on live data feed it received plain text.
+
+        def message(self, pubnub, message):
+            # Handle new message stored in message.message
+            pass
+
+    pubnub.add_listener(MySubscribeCallback())
+    pubnub.subscribe().channels('awesomeChannel').execute()
+    yield gen.sleep(10)
+
+
+if __name__ == '__main__':
+    IOLoop.current().run_sync(main)
+----
+
+== Copy and paste examples
+In addition to the Hello World sample code, we also provide some copy and paste snippets of common
+API functions:
+
+=== Init
+Instantiate a new Pubnub instance. Only the `subscribe_key` is mandatory. Also include `publish_key`
+if you intend to publish from this instance, and the `secret_key` if you wish to perform PAM
+administrative operations from this Python V4 instance.
+
+NOTE: For security reasons you should only include the secret-key on a highly secured server. The
+secret-key is only required for granting rights using our Access Manager.
+
+[source,python]
+.Initializing the client
+----
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'my_subscribe_key'
+pnconfig.publish_key = 'my_publish_key'
+pnconfig.secret_key = 'my_secret_key'
+
+pubnub = PubNubTornado(pnconfig)
+----
+
+=== Listeners
+
+[source,python]
+.Adding listeners
+----
+class MySubscribeCallback(SubscribeCallback):
+    def status(self, pubnub, status):
+        pass
+        # The status object returned is always related to subscribe but could contain
+        # information about subscribe, heartbeat, or errors
+        # use the operationType to switch on different options
+        if status.operation == PNOperationType.PNSubscribeOperation \
+                or status.operation == PNOperationType.PNUnsubscribeOperation:
+            if status.category == PNStatusCategory.PNConnectedCategory:
+                pass
+                # This is expected for a subscribe, this means there is no error or issue whatsoever
+            elif status.category == PNStatusCategory.PNReconnectedCategory:
+                pass
+                # This usually occurs if subscribe temporarily fails but reconnects. This means
+                # there was an error but there is no longer any issue
+            elif status.category == PNStatusCategory.PNDisconnectedCategory:
+                pass
+                # This is the expected category for an unsubscribe. This means there
+                # was no error in unsubscribing from everything
+            elif status.category == PNStatusCategory.PNUnexpectedDisconnectCategory:
+                pass
+                # This is usually an issue with the internet connection, this is an error, handle
+                # appropriately retry will be called automatically
+            elif status.category == PNStatusCategory.PNAccessDeniedCategory:
+                pass
+                # This means that PAM does allow this client to subscribe to this
+                # channel and channel group configuration. This is another explicit error
+            else:
+                pass
+                # This is usually an issue with the internet connection, this is an error, handle appropriately
+                # retry will be called automatically
+        elif status.operation == PNOperationType.PNSubscribeOperation:
+            # Heartbeat operations can in fact have errors, so it is important to check first for an error.
+            # For more information on how to configure heartbeat notifications through the status
+            # PNObjectEventListener callback, consult <link to the PNCONFIGURATION heartbeart config>
+            if status.is_error():
+                pass
+                # There was an error with the heartbeat operation, handle here
+            else:
+                pass
+                # Heartbeat operation was successful
+        else:
+            pass
+            # Encountered unknown status type
+
+    def presence(self, pubnub, presence):
+        pass  # handle incoming presence data
+
+    def message(self, pubnub, message):
+        pass  # handle incoming messages
+
+
+pubnub.add_listener(MySubscribeCallback())
+----
+
+[source,python]
+.Removing Listeners
+----
+# MySubscribeCallback is defined in the "Adding listeners" example
+my_listener = MySubscribeCallback()
+
+pubnub.add_listener(my_listener)
+
+# some time later
+pubnub.remove_listener(my_listener)
+----
+
+[source,python]
+.Handling disconnects
+----
+class HandleDisconnectsCallback(SubscribeCallback):
+    def status(self, pubnub, status):
+        if status.category == PNStatusCategory.PNUnexpectedDisconnectCategory:
+            # internet got lost, do some magic and call reconnect when ready
+            pubnub.reconnect()
+        elif status.category == PNStatusCategory.PNTimeoutCategory:
+            # do some magic and call reconnect when ready
+            pubnub.reconnect()
+        else:
+            logger.debug(status)
+
+    def presence(self, pubnub, presence):
+        pass
+
+    def message(self, pubnub, message):
+        pass
+
+disconnect_listener = HandleDisconnectsCallback()
+
+pubnub.add_listener(disconnect_listener)
+----
+
+==== Listeners categories
+
+|===
+| Categories | Description
+
+|PNNetworkIssuesCategory | A subscribe event experienced an exception when running.
+|PNReconnectedCategory | SDK was able to reconnect to pubnub.
+|PNConnectedCategory | SDK subscribed with a new mix of channels (fired every time the channel / channel group mix changed).
+|===
+
+=== Time
+
+[source,python]
+.Call `time()` to verify the client connectivity to the origin:
+----
+envelope = yield pubnub.time().future()
+    print('current time: %d' % envelope.result)
+----
+
+=== Subscribe
+
+[source,python]
+.Subscribe (listen on) a channel:
+----
+pubnub.subscribe().channels('my_channel').execute()
+----
+
+=== Publish
+
+[source,python]
+.Publish a message to a channel:
+----
+@gen.coroutine
+def publish_snippet():
+    def publish_callback(task):
+        exception = task.exception()
+
+        if exception is None:
+            envelope = task.result()
+            # Handle PNPublishResult(envelope.result) and PNStatus (envelope.status)
+            pass
+        else:
+            # Handle exception
+            pass
+
+    pubnub.publish().channel('such_channel').message(['hello', 'there']).future().add_done_callback(publish_callback)
+
+    yield gen.sleep(10)
+----
+
+=== HereNow
+NOTE: Requires that the `Presence` add-on is enabled for your key. How do I enable add-on features for my keys? - see http://www.pubnub.com/knowledge-base/discussion/644/how-do-i-enable-add-on-features-for-my-keys
+
+[source,python]
+.Get occupancy of who's here now on the channel:
+----
+@gen.coroutine
+def here_now():
+    envelope = yield pubnub.here_now().channels('demo').include_uuids(True).future()
+
+    if envelope.status.is_error():
+        return
+
+    for channel_data in envelope.result.channels:
+        print("---")
+        print("channel: %s" % channel_data.channel_name)
+        print("occupancy: %s" % channel_data.occupancy)
+
+        print("occupants: %s" % channel_data.channel_name)
+        for occupant in channel_data.occupants:
+            print("uuid: %s, state: %s" % (occupant.uuid, occupant.state))
+
+    pubnub.stop()
+----
+
+=== Presence
+Subscribe to realtime Presence events, such as `join`, `leave`, and `timeout`, by UUID. Setting the presence attribute to a callback will subscribe to presents events on `my_channel`:
+
+NOTE: Requires that the `Presence` add-on is enabled for your key. How do I enable add-on features for my keys? - see http://www.pubnub.com/knowledge-base/discussion/644/how-do-i-enable-add-on-features-for-my-keys
+
+[source,python]
+----
+pubnub.subscribe().channels('my_channel').with_presence().execute()
+----
+
+NOTE: The response of the call is handled by adding a Listener. Please see the Listeners section for
+more details. Listeners should be added before calling the method.
+
+
+=== History
+
+NOTE: Requires that the `Storage and Playback` add-on is enabled for your key. How do I enable
+add-on features for my keys? - see
+http://www.pubnub.com/knowledge-base/discussion/644/how-do-i-enable-add-on-features-for-my-keys
+
+[source,python]
+.Retrieve published messages from archival storage:
+----
+envelope = yield pubnub.history().channel('history_channel').count(100).future()
+# handle messages stored at evelope.result.messages
+# status is available as envelope.status
+----
+
+=== Unsubscribe
+
+[source,python]
+.Stop subscribing(listening) to a channel:
+----
+pubnub.unsubscribe().channels(['my_channel', 'another_channel']).execute()
+----
+
+NOTE: The response of the call is handled by adding a Listener. Please see the Listeners section
+for more details. Listeners should be added before calling the method.
