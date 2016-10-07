@@ -40,7 +40,7 @@ envelope = await pubnub.history()\
     .count(100) \
     .start(13847168620721752)\
     .end(13847168819178600)\
-    .sync()
+    .future()
 ----
 
 [source,python]

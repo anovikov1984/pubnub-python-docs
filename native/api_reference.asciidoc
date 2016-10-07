@@ -118,7 +118,7 @@ pubnub = PubNub(pnconfig)
 
 === Returns
 
-It returns the Pubnub instance for invoking PubNub APIs like `publish()`, `subscribe()`, `history()`, `hereNow()`, etc.
+It returns the Pubnub instance for invoking PubNub APIs like `publish()`, `subscribe()`, `history()`, `here_now()`, etc.
 
 === Other examples
 
@@ -197,7 +197,7 @@ To `publish` a message you can use the following method(s) in the Python V4 SDK:
 
 [source, python]
 ----
-pubnub.publish().channels(string).message(object).should_store(bool).meta(dict).use_post(bool
+pubnub.publish().channels(string).message(object).should_store(bool).meta(dict).use_post(bool)
 ----
 
 |====
@@ -564,7 +564,7 @@ NOTE: `SubscribeListener` should not be used with hight-performance sections of 
 === Description
 You can obtain information about the current state of a channel including a list of unique
 user-ids currently subscribed to the channel and the total occupancy count of the channel
-by calling the `hereNow()` function in your application.
+by calling the `here_now()` function in your application.
 
 === Method(s):
 [source, python]
@@ -1149,7 +1149,7 @@ PNHistoryItemResult:
 [source, python]
 .1. Use history() to retrieve the three oldest messages by retrieving from the time line in reverse:
 ----
-envelope = pubnub.history().channel("my_channel").count(3).reverse(True)sync()
+envelope = pubnub.history().channel("my_channel").count(3).reverse(True).sync()
 ----
 
 [source, json]
@@ -1350,7 +1350,6 @@ The `time()` operation returns a `PNTimeResponse` which contains the following o
 |===
 
 NOTE: Do not confuse with `timestamp()` method, which is a shortcut to `int(time.time())`
-===
 
 == Get Subscribed Channels
 === Description

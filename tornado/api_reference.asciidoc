@@ -206,12 +206,7 @@ To `publish` a message you can use the following method(s) in the Python V4 SDK:
 
 [source, python]
 ----
-envelope = yield pubnub.publish().channels(string)\
-    .message(object)\
-    .should_store(bool)\
-    .meta(dict)\
-    .use_post(bool)\
-    .future()
+pubnub.publish().channels(string).message(object).should_store(bool).meta(dict).use_post(bool)
 ----
 
 |====
@@ -236,7 +231,7 @@ envelope = yield pubnub.publish()\
     .future()
 
 # handle publish result, status always present, result if successful
-# envelope.status.isError to see if error happened
+# envelope.status.is_error() to see if error happened
 ----
 
 === Response
@@ -258,7 +253,7 @@ envelope = yield pubnub.publish()\
     .future()
 
 # handle publish result, status always present, result if successful
-# envelope.status.isError to see if error happened
+# envelope.status.is_error() to see if error happened
 ----
 
 [source, python]
