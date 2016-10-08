@@ -1,5 +1,6 @@
 import logging
 
+import time
 from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub, SubscribeListener
 
@@ -13,8 +14,8 @@ pnconfig.enable_subscribe = False
 
 pubnub = PubNub(pnconfig)
 
-envelope = pubnub.grant().auth_keys("blah").channels("history_channel").read(True).write(True).ttl(50).sync()
-print("Grant access: %r" % envelope.status.is_error())
+# envelope = pubnub.grant().auth_keys("blah").channels("history_channel").read(True).write(True).ttl(50).sync()
+# print("Grant access: %r" % envelope.status.is_error())
 
 logger = logging.getLogger("pubnub")
 
@@ -59,4 +60,28 @@ def include_tt():
 
     print(envelope)
 
-time_interval()
+
+def get_all_messages(start_tt):
+    def history_callback(result, status):
+        msgs = result.messages
+        start = result.start_timetoken
+        end = result.end_timetoken
+        count = len(msgs)
+
+        if count > 0:
+            print("%d" % count)
+            print("start %d" % start)
+            print("end %d" % end)
+
+        if count == 100:
+            get_all_messages(start)
+
+    pubnub.history()\
+        .channel('history_channel')\
+        .count(100)\
+        .start(start_tt)\
+        .async(history_callback)
+
+
+get_all_messages(14759343456292767)
+time.sleep(100)

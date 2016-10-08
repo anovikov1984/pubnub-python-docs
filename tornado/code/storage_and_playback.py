@@ -2,7 +2,8 @@ import logging
 
 import asyncio
 from pubnub.pnconfiguration import PNConfiguration
-from pubnub.pubnub_asyncio import PubNubAsyncio
+from pubnub.pubnub_tornado import PubNubTornado
+from tornado.ioloop import IOLoop
 
 pnconfig = PNConfiguration()
 
@@ -12,7 +13,7 @@ pnconfig.secret_key = "sec-c-MGFkMjQxYjMtNTUxZC00YzE3LWFiZGYtNzUwMjdjNmM3NDhk"
 pnconfig.auth_key = "blah"
 pnconfig.enable_subscribe = False
 
-pubnub = PubNubAsyncio(pnconfig)
+pubnub = PubNubTornado(pnconfig)
 
 async def grant():
     envelope = await pubnub.grant().auth_keys("blah").channels("history_channel").read(True).write(True).ttl(0).future()
@@ -31,35 +32,6 @@ async def publish500():
 
         print("%d: %s" % (i, envelope.status.is_error()))
 
-
-async def pulling_history():
-    envelope = await pubnub.history()\
-        .channel("history_channel")\
-        .count(2)\
-        .future()
-
-    print(envelope)
-
-
-async def time_interval():
-    envelope = await pubnub.history()\
-        .channel("history_channel")\
-        .count(100) \
-        .start(13847168620721752)\
-        .end(13847168819178600)\
-        .future()
-
-    print(envelope)
-
-
-async def include_tt():
-    envelope = await pubnub.history()\
-        .channel("history_channel")\
-        .count(100) \
-        .include_timetoken(True)\
-        .future()
-
-    print(envelope)
 
 async def get_all_messages(start_tt):
     envelope = await pubnub.history()\
@@ -81,9 +53,7 @@ async def get_all_messages(start_tt):
     if count == 100:
         await get_all_messages(start)
 
+if __name__ == '__main__':
+    # IOLoop.current().run_sync(publish500)
+    IOLoop.current().run_sync(lambda: get_all_messages(14759343456292767))
 
-
-loop = asyncio.get_event_loop()
-loop.run_until_complete(grant())
-# loop.run_until_complete(publish500())
-loop.run_until_complete(get_all_messages(14759343456292767))
