@@ -1,0 +1,115 @@
+= Python V3 to Python V4 Migration Guide
+
+== Global object naming
+=== Native
+* `V3` exposes `Pubnub`
+* `V4` exposes `PubNub`
+
+=== asyncio
+* `V3` does not support `asyncio`
+* `V4` exposes `PubNubAsyncio`
+
+=== Tornado
+* `V3` exposes `PubnubTornado`
+* `V4` exposes `PubNubTornado`
+
+=== Twisted
+* `V3` exposes `PubnubTwisted`
+* `V4` exposes `PubNubTwisted`
+
+== SDK Initialization is now done via `PNConfiguration` instance
+
+* `V3`:
+[source, python]
+----
+pubnub = Pubnub(publish_key="demo", subscribe_key="demo")
+----
+
+* `V4`:
+[source, python]
+----
+pnconf = PNConfiguration()
+
+pnconf.subscribe_key = 'demo'
+pnconf.publish_key = 'demo'
+
+pubnub = PubNub(pnconf)
+----
+
+== Subscribe, unsubscribe, presence no longer takes callback
+* `V3` accepts a callback as a parameter to announce when `messages` come in.
+* `V4` switches to the listener pattern for `messages`, `presence` and `status`. Please refer to the listener documentation to get started (TODO: Change to the associated python link)http://www.pubnub.com/docs/javascript/api-reference-sdk-v4#listeners
+
+== Transactional requests (everything but subscribe, unsubscribe, presence) are now invoking using builders
+* `V3` accepts `callback` and `error` callbacks as arguments:
+[source, python]
+----
+def callback(result):
+    print(result)
+
+def errback(error):
+    print(error)
+
+pubnub.publish('ch', 'Hi', callback=callback, error=errback)
+----
+
+* `V4`
+
+[source, python]
+.sync way (native)
+----
+try:
+    pubnub.publish().channel('ch').message('Hi').sync()
+except PubNubException as e:
+    print(e)
+----
+
+[source, python]
+.future await (for Tornado and asyncio with Python >= 3.5)
+----
+envelope = await pubnub.publish().channel('ch').message('Hi').future()
+----
+
+[source, python]
+.future yield from (for asyncio with Python == 3.4)
+----
+envelope = yield from pubnub.publish().channel('ch').message('Hi').future()
+----
+
+[source, python]
+.future yield (for Tornado)
+----
+envelope = yield pubnub.publish().channel('ch').message('Hi').future()
+----
+
+[source, python]
+.deferred yield (for Twisted)
+----
+envelope = yield pubnub.publish().channel('ch').message('Hi').deferred()
+----
+
+[source, python]
+.async (using native threads)
+----
+def publish_callback(result, status):
+    if status.is_error():
+        handle_error(error)
+    else:
+        handle_success(res)
+
+pubnub.publish().channel('ch').message('Hi').async(publish_callback)
+----
+
+== All subscribe callbacks (connect, reconnect, disconnect, message, error) are handled via listeners
+* `V3` exposes subscribe callbacks via method params
+* `V4` exposes the functionality via listeners
+
+== History payloads are now abstracted to reduce conditionals on client work
+* V3 returned different data structures based on request params.
+* V4 has standardized payload. Please refer to documentation `TODO: change to an associated link in Python docs`
+http://www.pubnub.com/docs/javascript/api-reference-sdk-v4#history_returns.
+
+== Status object is unified across all responses to allow error handling
+
+* `V4` returns a status object for each transactional request in the envelope and in the status portion of a
+ listener or a callback.
