@@ -1,4 +1,4 @@
-= Java V4 Stream Controller Tutorial for Realtime Apps (only snippets)
+= Python V4 Stream Controller Tutorial for Realtime Apps (only snippets)
 
 === CHANNEL MULTIPLEXING CODE SAMPLES
 

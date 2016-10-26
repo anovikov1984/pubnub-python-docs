@@ -1,0 +1,174 @@
+= Python V4 Presence Tutorial for Realtime Apps
+
+[source,python]
+.Setting uuid
+----
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'demo'
+pnconfig.publish_key = 'demo'
+pnconfig.uuid = 'Stephen'
+
+pubnub = PubNubTwisted(pnconfig)
+----
+
+[source,python]
+.Receiving Presence Join, Leave, and Timeout Events in realtime
+----
+pubnub.subscribe()\
+    .channels("my_channel")\
+    .with_presence()\
+    .execute()
+----
+
+[source,python]
+.Here Now
+----
+# if we're using inlineCallbacks
+envelope = yield pubnub.here_now()\
+        .channels(['cool_channel1', 'cool_channel2'])\
+        .include_uuids(True)\
+        .deferred()
+
+if envelope.status.is_error():
+    # handle error
+    returnValue(None)
+
+for channel_data in envelope.result.channels:
+    print("---")
+    print("channel: %s" % channel_data.channel_name)
+    print("occupancy: %s" % channel_data.occupancy)
+
+    print("occupants: %s" % channel_data.channel_name)
+    for occupant in channel_data.occupants:
+        print("uuid: %s, state: %s" % (occupant.uuid, occupant.state))
+        
+# if we're not using inlineCallbacks
+def handle_this(envelope)
+    if envelope.status.is_error():
+        # handle error
+        returnValue(None)
+    
+    for channel_data in envelope.result.channels:
+        print("---")
+        print("channel: %s" % channel_data.channel_name)
+        print("occupancy: %s" % channel_data.occupancy)
+    
+        print("occupants: %s" % channel_data.channel_name)
+        for occupant in channel_data.occupants:
+            print("uuid: %s, state: %s" % (occupant.uuid, occupant.state))
+            
+d = yield pubnub.here_now()\
+        .channels(['cool_channel1', 'cool_channel2'])\
+        .include_uuids(True)\
+        .deferred()
+        
+d.addCallback(handle_this)
+
+
+----
+
+
+[source,python]
+.Global Here Now
+----
+# if we're using inlineCallbacks
+envelope = yield pubnub.here_now()\
+    .include_state(True)\
+    .include_uuids(True)\
+    .deferred()
+    
+# if we're not using inlineCallbacks
+d = pubnub.here_now()\
+    .include_state(True)\
+    .include_uuids(True)\
+    .deferred()
+d.addCallback(my_callback)
+----
+
+
+[source,python]
+.Where Now
+----
+# if we're using inlineCallbacks
+envelope = yield pubnub.where_now().deferred()
+
+# if we're not using inlineCallbacks
+d = pubnub.where_now().deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Get State
+----
+# if we're using inlineCallbacks
+envelope = yield pubnub.get_state()\
+    .channels("my_channel")\
+    .uuid("jbonham")\
+    .deferred()
+
+# if we're using inlineCallbacks
+d = pubnub.get_state()\
+    .channels("my_channel")\
+    .uuid("jbonham")\
+    .deferred()
+    
+d.addCallback(my_callback)
+----
+
+
+[source,python]
+.Set State
+----
+# if we're using inlineCallbacks
+envelope = yield pubnub.set_state()\
+    .channels("my_channel")\
+    .state({"full_name": "James Patrick Page"})\
+    .uuid("jbonham")\
+    .deferred()
+    
+# if we're not using inlineCallbacks
+d = pubnub.set_state()\
+    .channels("my_channel")\
+    .state({"full_name": "James Patrick Page"})\
+    .uuid("jbonham")\
+    .deferred()
+    
+d.addCallback(my_callback)
+----
+
+WARNING: there is no code for the next snippet since there is no way to subscribe and set state in a single call in python
+
+[source,python]
+.Optimizing timeout events with heartbeat tuning #1
+----
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'demo'
+pnconfig.publish_key = 'demo'
+pnconfig.uuid = 'Stephen'
+
+pubnub = PubNubTwisted(pnconfig)
+----
+
+[source,python]
+.Optimizing timeout events with heartbeat tuning #2
+----
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'demo'
+pnconfig.publish_key = 'demo'
+pnconfig.set_presence_timeout(310)
+
+pubnub = PubNubTwisted(pnconfig)
+----
+
+[source,python]
+.Optimizing timeout events with heartbeat tuning #3
+----
+pnconfig.subscribe_key = 'demo'
+pnconfig.publish_key = 'demo'
+pnconfig.set_presence_timeout_with_custom_interval(320, 20)
+
+pubnub = PubNubTwisted(pnconfig)
+----

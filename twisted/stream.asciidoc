@@ -23,18 +23,36 @@ pubnub.subscribe().channels("foo.*").execute();
 [source,python]
 .Defining the channel group
 ----
-pubnub.add_channel_to_channel_group()\
+# if we're using inlineCallbacks
+envelope = yield pubnub.add_channel_to_channel_group()\
     .group(channel_group)\
     .channels("wife")\
-    .sync()
+    .deferred()
+    
+# if we're not using inlineCallbacks
+d = pubnub.add_channel_to_channel_group()\
+    .group(channel_group)\
+    .channels("wife")\
+    .deferred()
+    
+d.addCallback(my_callback)
 ----
 
 [source,python]
 ----
-pubnub.add_channel_to_channel_group()\
+# if we're using inlineCallbacks
+envelope = yield pubnub.add_channel_to_channel_group()\
     .group(channel_group)\
     .channels(["son", "daughter"])\
-    .sync()
+    .deferred()
+    
+# if we're not using inlineCallbacks
+d = pubnub.add_channel_to_channel_group()\
+    .group(channel_group)\
+    .channels(["son", "daughter"])\
+    .deferred()
+    
+d.addCallback(my_callback)
 ----
 
 [source,python]
@@ -52,16 +70,33 @@ pubnub.subscribe().channel_groups(["cg1", "cg2"]).with_presence().execute()
 [source,python]
 .Removing a channel from a channel group
 ----
-pubnub.remove_channel_from_channel_group()\
+# if we're using inlineCallbacks
+envelope = yield pubnub.remove_channel_from_channel_group()\
     .group(channel_group)\
     .channels(["son", "daughter"])\
-    .sync()
+    .deferred()
+    
+# if we're not using inlineCallbacks
+d = pubnub.remove_channel_from_channel_group()\
+    .group(channel_group)\
+    .channels(["son", "daughter"])\
+    .deferred()
+
+d.addCallback(my_callback)
 ----
 
 [source,python]
 .Remove channel group by name
 ----
-pubnub.remove_channel_group()\
+# if we're using inlineCallbacks
+envelope = yield pubnub.remove_channel_group()\
     .group(channel_group)\
-    .sync()
+    .deferred()
+
+# if we're not using inlineCallbacks
+d = pubnub.remove_channel_group()\
+    .group(channel_group)\
+    .deferred()
+    
+d.addCallback(my_callback)
 ----

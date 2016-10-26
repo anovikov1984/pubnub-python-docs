@@ -1,4 +1,4 @@
-= Java V4 Storage & Playback Tutorial for Realtime Apps
+= Python V4 Storage & Playback Tutorial for Realtime Apps
 
 [source,python]
 .Publish some messages

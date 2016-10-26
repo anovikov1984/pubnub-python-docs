@@ -1,0 +1,262 @@
+= Stream Filtering Tutorial for Python V4
+
+[source,python]
+.Publish with meta
+----
+meta = {
+    'my': 'meta',
+    'name': 'PubNub'
+}
+
+
+# if we're using inlineCallbacks
+envelope = yield pubnub.publish().channel('ch1').meta(meta).message('hello').deferred()
+
+# if we're not using inlineCallbacks
+d = pubnub.publish().channel('ch1').meta(meta).message('hello').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Subscribing with filtering
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "filter == expression"
+pubnub = PubNubTwisted(pnconfig)
+----
+
+[source,python]
+.Example #1-1
+----
+meta = {
+    'language': 'english',
+}
+
+# if we're using inlineCallbacks
+envelope = yield pubnub.publish().channel('ch1').meta(meta).message('Hi!').deferred()
+
+# if we're not using inlineCallbacks
+d = pubnub.publish().channel('ch1').meta(meta).message('Hi!').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #1-2
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "language == 'english'"
+pubnub = PubNubTornado(pnconfig)
+----
+
+[source,python]
+.Example #1-3
+----
+meta = {
+    'language': 'french',
+}
+
+# if we're using inlineCallbacks
+envelope = yield pubnub.publish().channel('ch1').meta(meta).message('Bonjour').deferred()
+
+# if we're not using inlineCallbacks
+d = pubnub.publish().channel('ch1').meta(meta).message('Bonjour').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #2-1
+----
+meta = {
+    'language': 'english',
+}
+
+# if we're using inlineCallbacks
+envelope = yield pubnub.publish().channel('ch1').meta(meta).message('Hi!').deferred()
+
+# if we're not using inlineCallbacks
+d = pubnub.publish().channel('ch1').meta(meta).message('Hi!').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #2-2
+----
+meta = {
+    'language': 'french',
+}
+# if we're using inline callbacks
+envelope = yield pubnub.publish().channel('ch1').meta(meta).message('Bonjour').deferred()
+
+# if we're not using inline callbacks
+d = pubnub.publish().channel('ch1').meta(meta).message('Bonjour').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #2-3
+----
+meta = {
+    'language': 'spanish',
+}
+# if we're using inline callbacks
+envelope = yield pubnub.publish().channel('ch1').meta(meta).message('Hola').deferred()
+
+# if we're not using inline callbacks
+d = pubnub.publish().channel('ch1').meta(meta).message('Hola').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #2-4
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "('french', 'english') contains language"
+pubnub = PubNubTornado(pnconfig)
+----
+
+
+[source,python]
+.Example #3-1
+----
+meta = {
+    'language': 'english',
+}
+# if we're using inline callbacks
+envelope = yield pubnub.publish().channel('ch1').meta(meta).message('Hi!').deferred()
+
+# if we're not using inline callbacks
+d = pubnub.publish().channel('ch1').meta(meta).message('Hi!').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #3-2
+----
+meta = {
+    'language': 'french',
+}
+# if we're using inline callbacks
+envelope = yield pubnub.publish().channel('ch1').meta(meta).message('Bonjour').deferred()
+
+# if we're not using inline callbacks
+d = pubnub.publish().channel('ch1').meta(meta).message('Bonjour').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #3-3
+----
+meta = {
+    'language': 'spanish',
+}
+# if we're using inline callbacks
+envelope = yield pubnub.publish().channel('ch1').meta(meta).message('Hola').deferred()
+
+# if we're not using inline callbacks
+d = pubnub.publish().channel('ch1').meta(meta).message('Hola').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #3-4
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "language != 'spanish'"
+pubnub = PubNubTornado(pnconfig)
+----
+
+[source,python]
+.Example #4-1
+----
+meta = {
+    'price': '99.75',
+    'channel': 'AAPL'
+}
+# if we're using inline callbacks
+envelope = yield pubnub.publish().channel('AAPL').meta(meta).message('99.75').future()
+
+# if we're not using inline callbacks
+d = 
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #4-2
+----
+meta = {
+    'price': '100.00',
+    'channel': 'AAPL'
+}
+# if we're using inline callbacks
+envelope = yield pubnub.publish().channel('AAPL').meta(meta).message('100.00').deferred()
+
+# if we're not using inline callbacks
+d = pubnub.publish().channel('AAPL').meta(meta).message('100.00').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #4-3
+----
+meta = {
+    'price': '15.50',
+    'channel': 'GOOG'
+}
+# if we're using inline callbacks
+envelope = yield pubnub.publish().channel('AAPL').meta(meta).message('99.75').deferred()
+
+# if we're not using inline callbacks
+d = pubnub.publish().channel('AAPL').meta(meta).message('99.75').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #4-4
+----
+meta = {
+    'price': '14.95',
+    'channel': 'GOOG'
+}
+# if we're using inline callbacks
+envelope = yield pubnub.publish().channel('AAPL').meta(meta).message('100.00').deferred()
+
+# if we're not using inline callbacks
+d = pubnub.publish().channel('AAPL').meta(meta).message('100.00').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #4-5
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "(price > 100.00 && channel == 'AAPL') || (price < 15.00 && channel == 'GOOG')"
+pubnub = PubNubTwisted(pnconfig)
+----
+
+[source,python]
+.Example #5-1
+----
+meta = {
+    'temperature': '60'
+}
+# if we're using inline callbacks
+envelope = yield pubnub.publish().channel('ch1').meta(meta).message('Hi!').deferred()
+
+# if we're not using inline callbacks
+d = pubnub.publish().channel('ch1').meta(meta).message('Hi!').deferred()
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Example #5-2
+----
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'my_key'
+pnconfig.filter_expression = "temperature > 50"
+pubnub = PubNubTwisted(pnconfig)
+----
