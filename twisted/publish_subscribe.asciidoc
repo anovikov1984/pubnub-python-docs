@@ -1,0 +1,138 @@
+= Python V4 Publish/Subscribe Tutorial for Realtime Apps
+
+== API keys
+
+TODO: change 'publishKey' => 'publish_key'
+
+TODO: 'subscribeKey' => 'subscribe_key'
+
+== Messages overview
+the same as in Java
+
+== Messages design consideration
+the same as in Java
+
+== Channel design patterns
+the same as in Java
+
+== Data stream samples
+The procedure to publish and subscribe is really quite simple:
+
+* Include PubNub library
+* `PubNubTwisted()` - instantiate a PubNub instance
+* `subscribe()` - subscribe to a specific channel
+* `publish()` - send message on a specific channel
+* `unsubscribe()` - additively unsubscribe to a specific channel
+
+==== Include the PubNub library
+Add PubNub to your project using one of the procedures defined under How to Get It.
+
+==== Initialize the API
+If this PubNubTornado instance will only be subscribing, you only need to pass the `subscribe_key`
+to initialize the instance. If this instance will be subscribing and publishing, you must
+also include the `publish_key` parameter.
+
+[source,python]
+----
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'my_subscribe_key'
+pnconfig.publish_key = 'my_publish_key'
+pnconfig.secret_key = 'my_secret_key'
+
+pubnub = PubNubTwisted(pnconfig)
+----
+
+==== Publishing and subscribing to a channel
+
+The channel the messages will be published over is called `my_channel`. For this example,
+we will use the same instance to both publish and subscribe. To do this, we'll publish
+a message to the channel, but only after we're sure we've first successfully subscribed to the channel.
+
+
+The `publish()` and `subscribe()` methods are pretty simple to use. For both `publish()`
+and `subscribe()`, the channel attribute defines the channel in use.
+
+When using the `subscribe()` method, the `callback` is where received messages are called-back to:
+
+[source,python]
+----
+pubnub.subscribe().channels("my_channel").execute()
+----
+
+NOTE: During your application's lifecycle, you can call `subscribe()` repeatedly to additively
+subscribe to additional channels.
+
+For `publish()`, the message attribute contains the data you are sending.
+
+[source,python]
+----
+# if we're using inlineCallbacks
+envelope = yield pubnub.publish()\
+    .channel("my_channel")\
+    .message(['hello', 'there'])\
+    .should_store(True)\
+    .use_post(True)\
+    .deferred()
+    
+# if we're not using inlineCallbacks
+d = pubnub.publish()\
+    .channel("my_channel")\
+    .message(['hello', 'there'])\
+    .should_store(True)\
+    .use_post(True)\
+    .deferred()
+d.addCallback(my_callback)
+----
+
+The above code demonstrates how to subscribe, and how to publish. But what if your use-case requires that client instance not only subscribes and publishes, but also that its guaranteed to start publishing only AFTER it's successfully subscribed? -- In other words, you want to guarantee it receives all of its own publishes?
+
+The Java V4 client SDK, like many of the PubNub SDKs, is asynchronous -- publish() can, and most likely will, fire before the previously executed subscribe() call completes. The result is, for a single-client instance, you would never receive (via subscribing) the message you just published, because the subscribe operation did not complete before the message was published.
+
+To get around this common case, we can take advantage of the optional connect callback in the subscribe method.
+
+[source,python]
+.Publish after subscribe connect using SubscribeCallback
+----
+from pubnub.enums import PNStatusCategory
+from pubnub.pubnub_twisted import PubNubTwisted as PubNub
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.callbacks import SubscribeCallback
+
+def main():
+    pnconf = PNConfiguration()
+    pnconf.subscribe_key = 'demo'
+    pnconf.publish_key = 'demo'
+
+    pubnub = PubNub(pnconf)
+
+    def my_publish_callback(result, status):
+        # Check whether request successfully completed or not
+        if not status.is_error():
+            envelope = result
+            pass  # Message successfully published to specified channel.
+
+    class MySubscribeCallback(SubscribeCallback):
+        def presence(self, pubnub, presence):
+            pass
+
+        def status(self, pubnub, status):
+            if status.category == PNStatusCategory.PNConnectedCategory:
+                pubnub.publish().channel("awesome_channel").message("Hello World!").async(my_publish_callback)
+
+        def message(self, pubnub, message):
+            pass
+
+    pubnub.add_listener(MySubscribeCallback())
+    pubnub.subscribe().channels('awesome_channel').execute()
+----
+
+==== Unsubscribing from a channel
+While you are subscribed to a channel, you will continue to receive messages published to that channel. To stop receiving messages on a given channel, you must Unsubscribe() from the channel.
+
+[source,python]
+----
+pubnub.unsubscribe().channels("my_channel").execute()
+----
+
+Like subscribe(), unsubscribe() can be called multiple times to successively remove different channels from the active subscription list.

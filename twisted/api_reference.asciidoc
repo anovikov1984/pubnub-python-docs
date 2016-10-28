@@ -1,4 +1,4 @@
-= Python v4.0 API Reference for Realtime Apps
+\= Python v4.0 API Reference for Realtime Apps
 
 NOTE: These docs are for PubNub 4.0 for Python which is our latest and greatest! For the docs of the
 older versions of the SDK, please check PubNub 3.0 for Python.
@@ -6,6 +6,38 @@ If you have questions about the PubNub for Java SDK, please contact us at suppor
 
 Python V4 complete API reference for building Realtime Applications on PubNub,
 including basic usage and sample code.
+
+== Important Notice
+Python Twisted PubNub Client uses twisted deferreds. Non-subscribe events will return deferred when fired via `#deferred()` method.
+Callback for this deferred should accept single parameter and it will be envelope.
+
+It is possible to fire asynchronous execution using `#async(callback)` method. It will be executed asynchronously. Callback for async should accept
+two parameters: `result` and `status`.
+
+You can also use twisted `inlineCallbacks`.
+
+=== Example
+[source, python]
+----
+# Callbacks
+def splited_callback(result, status)
+    print("status: %s" % status)
+    print("result: %s" % result)
+
+def my_callback(envelope):
+    splited_callback(envelope.result, envelope.status)
+
+# Deferred
+d = pubnub.publish().channel('my-channel').message('my-message').deferred()
+d.addCallback(my_callback)
+
+# Deferred when we're using inlineCallbacks
+envelope = yield pubnub.publish().channel('my-channel').message('my-message').deferred()
+my_callback(envelope)
+
+# Async
+pubnub.publish().channel('my-channel').message('my-message').async(splited_callback)
+----
 
 == Configuration
 === Description
@@ -52,6 +84,8 @@ is enabled and extra threads/loops are started. They should be explicitly stoppe
 
 [source, python]
 ----
+from pubnub.pnconfiguration import PNConfiguration
+
 pn_configuration = PNConfiguration()
 # subscribe_key from admin panel
 pn_configuration.subscribe_key = "my_subscribe_key" // required
@@ -95,7 +129,9 @@ To `initialize` PubNub you should instantiate a PubNub instance:
 
 [source, python]
 ----
-pubnub = PubNubAsyncio(my_pnconfig)
+from pubnub.pubnub_twisted import PubNubTwisted
+
+pubnub = PubNubTwisted(my_pnconfig)
 ----
 
 |====
@@ -108,72 +144,97 @@ pubnub = PubNubAsyncio(my_pnconfig)
 [source, python]
 .Initialize the PubNub cliean API
 ----
+from pubnub.pubnub_twisted import PubNubTwisted
+from pubnub.pnconfiguration import PNConfiguration
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = "my_subkey"
 pnconfig.publish_key = "my_pubkey"
 pnconfig.ssl = True
 
-pubnub = PubNubAsyncio(pnconfig)
+pubnub = PubNubTwisted(pnconfig)
 ----
 
 === Returns
 
-It returns the Pubnub instance for invoking PubNub APIs like `publish()`, `subscribe()`, `history()`, `hereNow()`, etc.
+It returns the Pubnub instance for invoking PubNub APIs like `publish()`, `subscribe()`, `history()`, `here_now()`, etc.
+
+=== Twisted Specific Example
+.Custom reactor and connection pool
+[source, python]
+----
+pubnub = PubNubTwisted(my_pnconfig, pool=custom_connection_pool, reactor=custom_reactor, clock=custom_clock)
+----
 
 === Other examples
 
 [source, python]
 .1. Initialize a non-secure client
 ----
+from pubnub.pubnub_twisted import PubNubTwisted
+from pubnub.pnconfiguration import PNConfiguration
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = "my_subkey"
 pnconfig.publish_key = "my_pubkey"
 pnconfig.ssl = False
 
-pubnub = PubNubAsyncio(pnconfig)
+pubnub = PubNubTornado(pnconfig)
 ----
 
 [source, python]
 .2. Initialization for a Read-Only client (In the case where a client will only read messages and never publish to a channel, you can simply omit the publishKey when initializing the client):
 ----
+from pubnub.pubnub_twisted import PubNubTwisted
+from pubnub.pnconfiguration import PNConfiguration
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = "my_subkey"
 
-pubnub = PubNubAsyncio(pnconfig)
+pubnub = PubNubTwisted(pnconfig)
 ----
 
 [source, python]
 .3. Specify a custom uuid (Under certain circumstances it useful to use a custom UUID to help in identifying your users):
 ----
+from pubnub.pubnub_twisted import PubNubTwisted
+from pubnub.pnconfiguration import PNConfiguration
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = "my_subkey"
 pnconfig.publish_key = "my_pubkey"
 pnconfig.uuid = "my_uuid"
 
-pubnub = PubNubAsyncio(pnconfig)
+pubnub = PubNubTwisted(pnconfig)
 ----
 
 [source, python]
 .4. Initializing with SSL Enabled (This examples demonstrates how to enable PubNub Transport Layer Encryption with SSL. Just initialize the client with ssl set to true. The hard work is done, now the PubNub API takes care of the rest. Just subscribe and publish as usual and you are good to go):
 ----
+from pubnub.pubnub_twisted import PubNubTwisted
+from pubnub.pnconfiguration import PNConfiguration
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = "my_subkey"
 pnconfig.publish_key = "my_pubkey"
 pnconfig.ssl = True
 
-pubnub = PubNubAsyncio(pnconfig)
+pubnub = PubNubTwisted(pnconfig)
 ----
 
 [source, python]
 .5. Initializing with Access Manager (For applications that will administer PAM permissions, the API is initialized with the secretKey as in the following example):
 ----
+from pubnub.pubnub_twisted import PubNubTwisted
+from pubnub.pnconfiguration import PNConfiguration
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = "my_subkey"
 pnconfig.publish_key = "my_pubkey"
 pnconfig.secret_key = "my_secretkey"
 pnconfig.ssl = True
 
-pubnub = PubNubAsyncio(pnconfig)
+pubnub = PubNubTwisted(pnconfig)
 ----
 
 Now that the pubnub object is instantiated the client will be able to access the PAM functions. The pubnub object will use the `secret_key` to sign all PAM messages to the PubNub Network.
@@ -183,11 +244,14 @@ NOTE: Anyone with the `secret_key` can grant and revoke permissions to your app.
 [source, python]
 .6. Initializing with a custom event loop
 ----
+from pubnub.pubnub_twisted import PubNubTwisted
+from pubnub.pnconfiguration import PNConfiguration
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = "my_subkey"
 pnconfig.publish_key = "my_pubkey"
 
-pubnub = PubNubAsyncio(pnconfig, custom_event_loop=my_event_loop)
+pubnub = PubNubTwisted(pnconfig, custom_ioloop=my_event_loop)
 ----
 
 == Publish
@@ -223,12 +287,14 @@ pubnub.publish().channels(string).message(object).should_store(bool).meta(dict).
 
 [source, python]
 ----
-envelope = await pubnub.publish()\
+d = pubnub.publish()\
     .channel("my_channel")\
     .message(["hello", "there"])\
     .should_store(True)\
     .use_post(True)\
-    .future()
+    .deferred()
+    
+d.addCallback(my_callback)
 
 # handle publish result, status always present, result if successful
 # envelope.status.is_error() to see if error happened
@@ -246,11 +312,12 @@ The `publish()` operation returns a `PNPublishResult` which contains the followi
 [source, python]
 .Publish with metadata
 ----
-envelope = await pubnub.publish()\
+d = pubnub.publish()\
     .channel("my_channel")\
     .message(["hello", "there"])\
     .meta({'name': 'Alex'})\
-    .future()
+    .deferred()
+d.addCallback(callback)
 
 # handle publish result, status always present, result if successful
 # envelope.status.is_error() to see if error happened
@@ -259,11 +326,13 @@ envelope = await pubnub.publish()\
 [source, python]
 .Publish dict
 ----
-try:
-    envelope = await pubnub.publish().channel("my_channel").message({'name': 'Alex', 'online': True}).future()
+
+def callback(envelope):
     print("publish timetoken: %d" % envelope.result.timetoken)
-except PubNubException as e:
-    handle_exception(e)
+
+d = pubnub.publish().channel("my_channel").message({'name': 'Alex', 'online': True}).future()
+d.addCallback(callback)
+
 ----
 
 == Subscribe
@@ -345,8 +414,8 @@ import logging
 import pubnub
 
 from pubnub.pnconfiguration import PNConfiguration
-from pubnub.pubnub_aiohttp import PubNubAsyncio as PubNub
-from pubnub.pubnub_aiohttp import SubscribeListener
+from pubnub.pubnub_twisted import PubNubTwisted as PubNub
+from pubnub.pubnub_twisted import SubscribeListener
 
 pubnub.set_stream_logger('pubnub', logging.DEBUG)
 
@@ -428,7 +497,7 @@ pubnub.subscribe().channels("foo.*").execute()
 [source, python]
 .5. Wildcard subscribe to channels (Wildcard subscribes allow the client to subscribe to multiple channels using wildcard. E.g., if you subscribe to `a.*` you will get all messages for `a.b`, `a.c`, `a.x`. The wildcarded * portion refers to any portion of the channel string name after the `dot (.)`):
 ----
-pubnub = PubNubAsyncio(pnconfig)
+pubnub = PubNubTwisted(pnconfig)
 
 my_listener = SubscribeListener()
 pubnub.add_listener(my_listener)
@@ -438,8 +507,10 @@ pubnub.subscribe().channels("my_channel").execute()
 my_listener.wait_for_connect()
 
 state = {'field_a': 'awesome', 'field_b': 10}
-envelope = await pubnub.set_state().channels('awesome_channel').\
-    channel_groups('awesome_channel_groups').state(state).future()
+d = pubnub.set_state().channels('awesome_channel').\
+    channel_groups('awesome_channel_groups').state(state).deferred()
+    
+d.addCallback(my_callback)
 ----
 
 [source, python]
@@ -553,22 +624,6 @@ pubnub.subscribe().channel("my_channel").execute()
 pubnub.remove_listener(my_listener)
 ----
 
-`SubscribeListener` is an extension of `SubscribeCallback` that contains some extra helpers
-to make work with asynchronous code easier:
-
-[source, python]
-----
-my_listener = SubscribeListener()
-
-pubnub.add_listener(my_listener)
-pubnub.subscribe().channel("my_channel").execute()
-
-await my_listener.wait_for_connect()
-print('connected')
-
-pubnub.remove_listener(my_listener)
-----
-
 NOTE: `SubscribeListener` should not be used with hight-performance sections of your app.
 
 == Here Now
@@ -580,7 +635,7 @@ by calling the `here_now()` function in your application.
 === Method(s):
 [source, python]
 ----
-pubnub.here_now().channels(str|list|tuple).include_state(bool).include_uuids(bool)
+pubnub.here_now().channels(str|list|tuple).include_state(bool).include_uuids(bool).future()
 ----
 
 |===
@@ -597,7 +652,7 @@ pubnub.here_now().channels(str|list|tuple).include_state(bool).include_uuids(boo
 .Get a list of uuids subscribed to channel:
 ----
 
-envelope = await pubnub.here_now().channels("my_channel", "demo").include_uuids(True).future()
+envelope = yield pubnub.here_now().channels("my_channel", "demo").include_uuids(True).future()
 if envelope.status.is_error():
     # handle error
     return
@@ -640,8 +695,10 @@ The `here_now()` operation returns a `PNHereNowResult` which contains the follow
 [source, python]
 .1. Returning State
 ----
-envelope = await pubnub.here_now().channels("my_channel").\
-    include_uuids(True).include_state(True).future()
+d = pubnub.here_now().channels("my_channel").\
+    include_uuids(True).include_state(True).deferred()
+    
+d.addCallback(my_callback)
 ----
 
 [source, json]
@@ -690,8 +747,10 @@ envelope = await pubnub.here_now().channels("my_channel").\
 [source, python]
 .2. Return Occupancy Only (You can return only the occupancy information for a single channel by specifying the channel and setting uuids to false):
 ----
-envelope = await pubnub.here_now().channels("my_channel").\
-    include_uuids(False).include_state(False).future()
+d = pubnub.here_now().channels("my_channel").\
+    include_uuids(False).include_state(False).deferred()
+    
+d.addCallback(my_callback)
 ----
 
 [source, json]
@@ -711,7 +770,8 @@ envelope = await pubnub.here_now().channels("my_channel").\
 [source, python]
 .3. Returning uuids and occupancy for all channels (You can return the list of uuids and occupancy for all channels by omitting the channel):
 ----
-envelope = await pubnub.here_now().include_uuids(True).include_state(False).future()
+d = pubnub.here_now().include_uuids(True).include_state(False).deferred()
+d.addCallback(my_callback)
 ----
 
 [source, json]
@@ -742,7 +802,8 @@ envelope = await pubnub.here_now().include_uuids(True).include_state(False).futu
 [source, python]
 .4. Return `Occupancy` for all channels (You can return only the `occupancy` information (`Global Here Now`) by omitting the `channel name`):
 ----
-envelope = await pubnub.here_now().include_uuids(True).include_state(True).future()
+d = pubnub.here_now().include_uuids(True).include_state(True).deferred()
+d.addCallback(my_callback)
 ----
 
 [source, json]
@@ -762,8 +823,10 @@ envelope = await pubnub.here_now().include_uuids(True).include_state(True).futur
 [source, python]
 .5. Here Now for Channel Groups:
 ----
-envelope = await pubnub.here_now().channel_groups(['cg1', 'cg2', 'cg3']).\
-    include_uuids(True).include_state(True).future()
+d = pubnub.here_now().channel_groups(['cg1', 'cg2', 'cg3']).\
+    include_uuids(True).include_state(True).deferred()
+    
+d.addCallback(my_callback)
 ----
 
 [source, json]
@@ -798,7 +861,8 @@ You simply need to define the uuid and the callback function to be used to send 
 [source, python]
 .Get a list of channels a uuid is subscribed to
 ----
-envelope = await pubnub.where_now().future()
+d = pubnub.where_now().deferred()
+d.addCallback(my_callback)
 ----
 
 === Response
@@ -812,7 +876,8 @@ The `where_now()` operation returns a `PNWhereNowResult` which contains the foll
 === Other examples
 [source, python]
 ----
-envelope = await pubnub.where_now().uuid('some-other-uuid').future()
+d = pubnub.where_now().uuid('some-other-uuid').deferred()
+d.addCallback(my_callback)
 ----
 
 == User State
@@ -858,13 +923,15 @@ pubnub.set_state().channels(str|list|tuple).channel_groups(str|list|tuple).uuid(
 .Set state:
 ----
 my_state = {'age': 20}
-envelope = await pubnub.set_state().channels(['ch1', 'ch2', 'ch3']).state(my_state).future()
+d = pubnub.set_state().channels(['ch1', 'ch2', 'ch3']).state(my_state).deferred()
+d.addCallback(my_callback)
 ----
 
 [source, python]
 .Get state:
 ----
-envelope = await pubnub.get_state().channels(['ch1', 'ch2', 'ch3']).uuid('such_uuid').future()
+d = pubnub.get_state().channels(['ch1', 'ch2', 'ch3']).uuid('such_uuid').deferred()
+d.addCallback(my_callback)
 ----
 
 === Response
@@ -888,7 +955,7 @@ The `get_state()` operation returns a `PNGetStateResult` which contains the foll
 .Set state for channels in a `channel group`:
 ----
 my_state = {'age': 20}
-envelope = await pubnub.set_state().channel_gorups(['gr1', 'gr2', 'gr3']).state(my_state).future()
+envelope = yield pubnub.set_state().channel_gorups(['gr1', 'gr2', 'gr3']).state(my_state).future()
 ----
 
 == Grant
@@ -914,11 +981,13 @@ To `Grant Permissions on a Channel` you can use the following method(s) in the P
 [source, python]
 .Grant_PAM_Permissions_for_channel_and_auth_key
 ----
-envelope = await pubnub.grant().channels(["ch1", "ch2", "ch3"]).\
+d = pubnub.grant().channels(["ch1", "ch2", "ch3"]).\
     channel_groups(["cg1", "cg2"]).\
     auth_keys(["key1", "key2"]).\
     read(True).write(True).manage(True).\
-    future()
+    deferred()
+    
+d.addCallback(my_callback)
 ----
 
 === Response
@@ -969,38 +1038,42 @@ The `grant()` operation returns a `PNAccessManagerGrantResult` which contains th
 [source, python]
 .1. Grant subscribe privileges to all users on all `channel(s)` with default ttl (`1440` minutes):
 ----
-envelope = await pubnub.grant().read(True).write(True).future()
+d = pubnub.grant().read(True).write(True).deferred()
+d.addCallback(my_callback)
 ----
 
 [source, python]
 .2. Allow subscribe and publish to a specific grant subscribe and publish to a specific `channel` for all users (no auth_key required) with default ttl (`1440` minutes):
 ----
-envelope = await pubnub.grant().channels("my_channel").read(True).write(True).future()
+d = pubnub.grant().channels("my_channel").read(True).write(True).deferred()
+d.addCallback(my_callback)
 ----
 
 [source, python]
 .3. Grant subscribe access to a channel only for clients with a specific auth_key with a 5 minute ttl:
 ----
-envelope = await pubnub.grant().channels("my_channel").read(False).write(True).\
-    auth_keys("my_ro_authkey").ttl(5).future()
+d = pubnub.grant().channels("my_channel").read(False).write(True).\
+    auth_keys("my_ro_authkey").ttl(5).deferred()
+d.addCallback(my_callback)
 ----
 
 [source, python]
 .4. Allow access to a specific channel for presence:
 ----
-envelope = await pubnub.grant().\
-    channels("my_channel-pnpres").read(True).write(True).future()
+d = pubnub.grant().\
+    channels("my_channel-pnpres").read(True).write(True).deferred()
 ----
 
 [source, python]
 .5. Grant PAM Permissions for channel group:
 ----
-envelope = await pubnub.grant().\
+d = pubnub.grant().\
     channel_groups(["cg1", "cg2", "cg3"]).\
     auth_keys(["auth1", "auth2", "auth3"]).\
     read(True).write(True).manage(True).\
     ttl(12237).\
-    .future()
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 == Adding Channels to Channel Group
@@ -1025,10 +1098,12 @@ pubnub.add_channel_to_channel_group().channels(str|list|tuple).\
 [source, python]
 .Adding channels:
 ----
-envelope = await pubnub.add_channel_to_channel_group().\
+d = pubnub.add_channel_to_channel_group().\
     channels(["ch1", "ch2"]).\
     channel_group("cg1").\
-    future()
+    deferred()
+    
+d.addCallback(my_callback)
 ----
 
 
@@ -1053,7 +1128,7 @@ pubnub.list_channels_in_channel_group().group(str)
 [source, python]
 .Listing channels:
 ----
-envelope = pubnub.list_channels_in_channel_group().\
+envelope = yield pubnub.list_channels_in_channel_group().\
     channel_group("cg1").future()
 ----
 
@@ -1080,10 +1155,11 @@ pubnub.list_channels_in_channel_group().group(str)
 [source, python]
 .Removing channels:
 ----
-envelope = await pubnub.remove_channel_from_channel_group().\
+d = pubnub.remove_channel_from_channel_group().\
     channels(["ch1", "ch2"]).\
     channel_group("cg1").\
-    future()
+    deferred()
+d.addCallback(my_callback)
 ----
 
 == Deleting Channel Group
@@ -1108,8 +1184,9 @@ pubnub.remove_channel_group().group(str)
 [source, python]
 .Deleting a Channel Group:
 ----
-envelope = await pubnub.remove_channel_group().\
-    channel_group("cg1").future()
+d = pubnub.remove_channel_group().\
+    channel_group("cg1").deferred()
+d.addCallback(my_callback)
 ----
 
 == History
@@ -1136,7 +1213,7 @@ pubnub.history().channel(str).reverse(bool).include_timetoken(bool).start(int).e
 [source, python]
 .Retrieve the last 100 messages on a channel:
 ----
-envelope = await pubnub.history().channel("history_channel").count(100).future()
+envelope = yield pubnub.history().channel("history_channel").count(100).future()
 ----
 
 === Response
@@ -1159,7 +1236,7 @@ PNHistoryItemResult:
 [source, python]
 .1. Use history() to retrieve the three oldest messages by retrieving from the time line in reverse:
 ----
-envelope = await pubnub.history().channel("my_channel").count(3).reverse(True).future()
+envelope = yield pubnub.history().channel("my_channel").count(3).reverse(True).future()
 ----
 
 [source, json]
@@ -1176,11 +1253,12 @@ envelope = await pubnub.history().channel("my_channel").count(3).reverse(True).f
 [source, python]
 .2. Use history() to retrieve messages newer than a given time token by paging from oldest message to newest message starting at a single point in time (exclusive):
 ----
-envelope = await pubnub.history()\
+d = pubnub.history()\
     .channel("my_channel")\
     .start(13847168620721752)\
     .reverse(true)\
-    .future()
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 [source, python]
@@ -1196,13 +1274,14 @@ envelope = await pubnub.history()\
 [source, python]
 .3. Use history() to retrieve messages until a given time token by paging from newest message to oldest message until a specific end point in time (inclusive):
 ----
-envelope = await pubnub.history()\
+d = pubnub.history()\
     .channel("my_channel")\
     .count(100)\
     .start(-1)\
     .end(13847168819178600)\
     .reverse(True)\
-    .future()
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 [source, json]
@@ -1218,39 +1297,37 @@ envelope = await pubnub.history()\
 [source, python]
 .4. Paging History Responses:
 ----
-async def get_all_messages(start_tt):
-    envelope = await pubnub.history()\
-        .channel('history_channel')\
+@inlineCallbacks
+def get_all_messages(start_tt):
+    envelope = yield pubnub.history()\
+        .channel('channel')\
         .count(100)\
         .start(start_tt)\
-        .future()
+        .deferred()
 
     msgs = envelope.result.messages
     start = envelope.result.start_timetoken
     end = envelope.result.end_timetoken
     count = len(msgs)
-
+    
     if count > 0:
         print("%d" % count)
         print("start %d" % start)
         print("end %d" % end)
 
     if count == 100:
-        await get_all_messages(start)
-
-
-loop = asyncio.get_event_loop()
-loop.run_until_complete(get_all_messages(14759343456292767))
+        get_all_messages(start)
 ----
 
 [source, python]
 .5. Include timetoken in history response:
 ----
-envelope = await pubnub.history()\
+d = pubnub.history()\
     .channel("my_channel")\
     .count(100)\
     .include_tometoken()
-    .future()
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 
@@ -1276,11 +1353,12 @@ pubnub.add_channels_to_push().push_type(PNPushType).channels(list).device_id(str
 === Basic example
 [source, python]
 ----
-envelope = await pubnub.add_channels_to_push()\
+d = pubnub.add_channels_to_push()\
     .push_type(PNPushType.GCM)\
     .channels(["ch1", "ch2", "ch3"])\
     .device_id("deviceId")\
-    .future()
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 === Response
@@ -1307,10 +1385,11 @@ pubnub.list_push_channels().push_type(PNPushType).device_id(str)
 === Basic example
 [source, python]
 ----
-envelope = await pubnub.list_push_channels()\
+d = pubnub.list_push_channels()\
     .push_type(PNPushType.GCM)\
     .device_id("deviceId")\
-    .future()
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 === Response
@@ -1343,11 +1422,12 @@ pubnub.remove_channels_from_push().push_type(PNPushType).channels(list).device_i
 === Basic example
 [source, python]
 ----
-envelope = await pubnub.remove_channels_from_push()\
+d = pubnub.remove_channels_from_push()\
     .push_type(PNPushType.GCM)\
     .channels("ch1", "ch2", "ch3")\
     .device_id("deviceId")\
-    .future()
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 === Response
@@ -1369,7 +1449,8 @@ pubnub.time()
 === Basic usage
 [source, python]
 ----
-envelope = await pubnub.time().future()
+d = pubnub.time().deferred()
+d.addCallback(my_callback)
 ----
 
 === Response

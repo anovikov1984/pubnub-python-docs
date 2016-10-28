@@ -1,0 +1,107 @@
+= Python V4 Storage & Playback Tutorial for Realtime Apps
+
+[source,python]
+.Publish some messages
+----
+# if we're using inlineCallbacks
+for i in range(0, 500):
+    envelope = yield pubnub.publish()\
+        .message(['message#', i])\
+        .channel('history_channel')\
+        .should_store(True)\
+        .deferred()
+
+    print("%d: %s" % (i, envelope.status.is_error()))
+    
+# if we're not using inlineCallbacks
+for i in range(0, 500):
+    def print_if_error(envelope):
+        print("%d: %s" % (i, envelope.status.is_error()))
+
+    d = pubnub.publish()\
+        .message(['message#', i])\
+        .channel('history_channel')\
+        .should_store(True)\
+        .deferred()
+    
+    d.addCallback(print_if_error)
+----
+
+[source,python]
+.Pulling from storage with a simple history() call
+----
+# if we're using inlineCallbacks
+envelope = yield pubnub.history()\
+    .channel("history_channel")\
+    .count(100)\
+    .deferred()
+    
+# if we're not using inlineCallbacks
+d = pubnub.history()\
+    .channel("history_channel")\
+    .count(100)\
+    .deferred()
+    
+d.addCallback(my_callback)
+----
+
+
+[source,python]
+.Paging
+----
+# if we're using inlineCallbacks
+envelope = yield pubnub.history()\
+    .channel("history_channel")\
+    .count(2)\
+    .deferred()
+    
+# if we're not using inlineCallbacks
+d = pubnub.history()\
+    .channel("history_channel")\
+    .count(2)\
+    .deferred()
+
+d.addCallback(my_callback)   
+----
+
+[source,python]
+.Retreiving from a time interval
+----
+# if we're using inlineCallbacks
+envelope = yield pubnub.history()\
+    .channel("history_channel")\
+    .count(100) \
+    .start(13847168620721752)\
+    .end(13847168819178600)\
+    .deferred()
+    
+# if we're not using inlineCallbacks
+d = pubnub.history()\
+    .channel("history_channel")\
+    .count(100) \
+    .start(13847168620721752)\
+    .end(13847168819178600)\
+    .deferred()
+    
+d.addCallback(my_callback)
+----
+
+[source,python]
+.Include timetoken into history response
+----
+# if we're using inlineCallbacks
+envelope = yield pubnub.history()\
+    .channel("history_channel")\
+    .count(100) \
+    .include_timetoken(True)\
+    .deferred()
+    
+# if we're not using inlineCallbacks
+d = pubnub.history()\
+    .channel("history_channel")\
+    .count(100) \
+    .include_timetoken(True)\
+    .deferred()
+    
+d.addCallback(my_callback)
+----

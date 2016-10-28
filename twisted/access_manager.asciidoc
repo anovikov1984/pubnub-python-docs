@@ -1,9 +1,4 @@
-= Python Security with Access Control, AES & TLS/SSL encryption for Realtime Apps
-
-TODO: rename 'secretKey' => 'secret_key'
-TODO: rename 'cipherKey' => 'cipher_key'
-TODO: rename 'setSecure' => 'ssl' < in python it's not a method but a field
-
+= Python Twisted V4 Security with Access Control, AES & TLS/SSL encryption for Realtime Apps
 
 [source,python]
 .To initialize with the secret key:
@@ -15,7 +10,7 @@ pnconfig.subscribe_key = "my_subscribe_key"
 pnconfig.secret_key = "my_secret_key"
 pnconfig.ssl = True
 
-pubnub = PubNub(pnconfig)
+pubnub = PubNubTwisted(pnconfig)
 ----
 
 
@@ -34,36 +29,62 @@ pnconfig = PNConfiguration()
 pnconfig.subscribe_key = "my_subscribe_key"
 pnconfig.secret_key = "my_secret_key"
 
-pubnub = PubNub(pnconfig)
+pubnub = PubNubTwisted(pnconfig)
 ----
 
 [source,python]
 .Pam operations level #2
 ----
-envelope = pubnub.revoke().sync()
+# assuming we're using @inlineCallbacks
+envelope = yield pubnub.revoke().future().deferred()
+
+#assuming we're not using @inlineCallbacks
+d = pubnub.revoke().future().deferred()
+d.addCallback(my_callback)
 ----
 
 [source,python]
 .Pam operations level #3
 ----
-envelope = pubnub.grant()\
+# assuming we're using @inlineCallbacks
+envelope = yield pubnub.grant()\
     .read(True)\
     .write(False)\
-    .channel('public_chat')\
+    .channels('public_chat')\
     .ttl(60)\
-    .sync()
+    .deferred()
+    
+#assuming we're not using @inlineCallbacks
+d = pubnub.grant()\
+    .read(True)\
+    .write(False)\
+    .channels('public_chat')\
+    .ttl(60)\
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 [source,python]
 .Pam operations level #4
 ----
-envelope = pubnub.grant()\
+# assuming we're using @inlineCallbacks
+envelope = yield pubnub.grant()\
     .read(True)\
     .write(True)\
-    .channel('public_chat')\
+    .channels('public_chat')\
     .auth_keys('authenticateduser')\
     .ttl(60)\
-    .sync()
+    .deferred()
+    
+#assuming we're not using @inlineCallbacks
+d = pubnub.grant()\
+    .read(True)\
+    .write(True)\
+    .channels('public_chat')\
+    .auth_keys('authenticateduser')\
+    .ttl(60)\
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 
@@ -93,21 +114,39 @@ pubnub.subscribe().channels("private_chat").execute()
 [source,python]
 .Grant access to manage CG
 ----
-envelope = pubnub.grant()\
+# assuming we're using @inlineCallbacks
+envelope = yield pubnub.grant()\
     .manage(True)\
     .channel_groups(['cg1', 'cg2', 'cg3'])\
     .auth_keys(['key1', 'key2', 'key3'])\
     .ttl(60)\
-    .sync()
+    .deferred()
+    
+#assuming we're not using @inlineCallbacks
+d = pubnub.grant()\
+    .manage(True)\
+    .channel_groups(['cg1', 'cg2', 'cg3'])\
+    .auth_keys(['key1', 'key2', 'key3'])\
+    .ttl(60)\
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 [source,python]
 .Revoke access to CG
 ----
-envelope = pubnub.revoke()\
+# assuming we're using @inlineCallbacks
+envelope = yield pubnub.revoke()\
     .channel_groups(['cg1', 'cg2', 'cg3'])\
     .auth_keys(['key1', 'key2', 'key3'])\
-    .sync()
+    .deferred()
+    
+# assuming we're not using @inlineCallbacks
+d = pubnub.revoke()\
+    .channel_groups(['cg1', 'cg2', 'cg3'])\
+    .auth_keys(['key1', 'key2', 'key3'])\
+    .deferred()
+d.addCallback(my_callback)
 ----
 
 [source,python]
@@ -119,7 +158,7 @@ pnconfig.publish_key = "my_pub_key"
 pnconfig.subscribe_key = "my_sub_key"
 pnconfig.cipher_key = "my_cipher_key"
 
-pubnub = PubNub(pnconfig)
+pubnub = PubNubTwisted(pnconfig)
 ----
 
 [source,python]
@@ -131,5 +170,5 @@ pnconfig.publish_key = "my_pub_key"
 pnconfig.subscribe_key = "my_sub_key"
 pnconfig.ssl = True
 
-pubnub = PubNub(pnconfig)
+pubnub = PubNubTwisted(pnconfig)
 ----

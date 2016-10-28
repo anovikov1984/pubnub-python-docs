@@ -345,7 +345,8 @@ import logging
 import pubnub
 
 from pubnub.pnconfiguration import PNConfiguration
-from pubnub.pubnub import PubNub, SubscribeListener
+from pubnub.pubnub_tornado import PubNubTornado as PubNub
+from pubnub.pubnub_tornado import SubscribeListener
 
 pubnub.set_stream_logger('pubnub', logging.DEBUG)
 

@@ -1,4 +1,4 @@
-= Java V4 Security with Access Control, AES & TLS/SSL encryption for Realtime Apps
+= Python Tornado Security with Access Control, AES & TLS/SSL encryption for Realtime Apps
 
 TODO: rename 'secretKey' => 'secret_key'
 TODO: rename 'cipherKey' => 'cipher_key'
@@ -20,7 +20,7 @@ pubnub = PubNubTornado(pnconfig)
 
 
 [source,python]
-.To initialize with the secret key #2:
+.To initialize with the auth key:
 ----
 pnconfig = PNConfiguration()
 pnconfig.auth_key = "my_authkey"
