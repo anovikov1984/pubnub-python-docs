@@ -29,6 +29,11 @@ https://github.com/pubnub/python/tree/master/python
 
 [source, python]
 ----
+from pubnub.callbacks import SubscribeCallback
+from pubnub.enums import PNStatusCategory
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub
+
 pnconfig = PNConfiguration()
 
 pnconfig.subscribe_key = 'demo'
@@ -92,6 +97,9 @@ secret-key is only required for granting rights using our Access Manager.
 [source,python]
 .Initializing the client
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub
+
 pnconfig = PNConfiguration()
 
 pnconfig.subscribe_key = 'my_subscribe_key'
@@ -106,6 +114,9 @@ pubnub = PubNub(pnconfig)
 [source,python]
 .Adding listeners
 ----
+from pubnub.callbacks import SubscribeCallback
+from pubnub.enums import PNStatusCategory
+
 class MySubscribeCallback(SubscribeCallback):
     def status(self, pubnub, status):
         pass
@@ -176,6 +187,9 @@ pubnub.remove_listener(my_listener)
 [source,python]
 .Handling disconnects
 ----
+from pubnub.callbacks import SubscribeCallback
+from pubnub.enums import PNStatusCategory
+
 class HandleDisconnectsCallback(SubscribeCallback):
     def status(self, pubnub, status):
         if status.category == PNStatusCategory.PNUnexpectedDisconnectCategory:
