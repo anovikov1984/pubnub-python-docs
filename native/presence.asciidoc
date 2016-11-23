@@ -8,6 +8,9 @@ TODO: rename `whereNow()` => `where_now()`
 [source,python]
 .Setting uuid
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub
+
 pnconfig = PNConfiguration()
 
 pnconfig.subscribe_key = 'demo'
@@ -88,6 +91,9 @@ WARNING: there is no code for the next snippet since there is no way to subscrib
 [source,python]
 .Optimizing timeout events with heartbeat tuning #1
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub
+
 pnconfig = PNConfiguration()
 
 pnconfig.subscribe_key = 'demo'
@@ -100,6 +106,9 @@ pubnub = PubNub(pnconfig)
 [source,python]
 .Optimizing timeout events with heartbeat tuning #2
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub
+
 pnconfig = PNConfiguration()
 
 pnconfig.subscribe_key = 'demo'
@@ -112,6 +121,11 @@ pubnub = PubNub(pnconfig)
 [source,python]
 .Optimizing timeout events with heartbeat tuning #3
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub
+
+pnconfig = PNConfiguration()
+
 pnconfig.subscribe_key = 'demo'
 pnconfig.publish_key = 'demo'
 pnconfig.set_presence_timeout_with_custom_interval(320, 20)
