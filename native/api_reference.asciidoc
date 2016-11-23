@@ -444,7 +444,7 @@ pubnub.subscribe().channels("foo.*").execute()
 [source, python]
 .5. Subscribing with State (You can set state for a uuid during a subscribe by using the state parameter. Simply specify the desired key/value pairs as a JSON object.):
 ----
-from pubnub.enums import PNStatusCategory
+from pubnub.pubnub import SubscribeListener
 from pubnub.pubnub import PubNub
 
 pubnub = PubNub(pnconfig)

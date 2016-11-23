@@ -14,6 +14,9 @@ yield pubnub.publish().channel('ch1').meta(meta).message('hello').future()
 [source,python]
 .Subscribing with filtering
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_tornado import PubNubTornado
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = 'my_key'
 pnconfig.filter_expression = "filter == expression"
@@ -33,6 +36,9 @@ yield pubnub.publish().channel('ch1').meta(meta).message('Hi!').future()
 [source,python]
 .Example #1-2
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_tornado import PubNubTornado
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = 'my_key'
 pnconfig.filter_expression = "language == 'english'"
@@ -82,6 +88,9 @@ yield pubnub.publish().channel('ch1').meta(meta).message('Hola').future()
 [source,python]
 .Example #2-4
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_tornado import PubNubTornado
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = 'my_key'
 pnconfig.filter_expression = "('french', 'english') contains language"
@@ -122,6 +131,9 @@ yield pubnub.publish().channel('ch1').meta(meta).message('Hola').future()
 [source,python]
 .Example #3-4
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_tornado import PubNubTornado
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = 'my_key'
 pnconfig.filter_expression = "language != 'spanish'"
@@ -175,6 +187,9 @@ yield pubnub.publish().channel('AAPL').meta(meta).message('100.00').sync()
 [source,python]
 .Example #4-5
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_tornado import PubNubTornado
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = 'my_key'
 pnconfig.filter_expression = "(price > 100.00 && channel == 'AAPL') || (price < 15.00 && channel == 'GOOG')"
@@ -194,6 +209,9 @@ yield pubnub.publish().channel('ch1').meta(meta).message('Hi!').future()
 [source,python]
 .Example #5-2
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_tornado import PubNubTornado
+
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = 'my_key'
 pnconfig.filter_expression = "temperature > 50"

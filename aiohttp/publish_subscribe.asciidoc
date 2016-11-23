@@ -34,6 +34,9 @@ also include the `publish_key` parameter.
 
 [source,python]
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_asyncio import PubNubAsyncio
+
 pnconfig = PNConfiguration()
 
 pnconfig.subscribe_key = 'my_subscribe_key'
@@ -84,6 +87,11 @@ To get around this common case, we can take advantage of the optional connect ca
 [source,python]
 .Publish after subscribe connect using SubscribeCallback
 ----
+from pubnub.callbacks import SubscribeCallback
+from pubnub.enums import PNStatusCategory
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_asyncio import PubNubAsyncio
+
 pnconfig = PNConfiguration()
 
 pnconfig.publish_key = "demo"
@@ -116,6 +124,8 @@ pubnub.subscribe().channels("awesomeChannel").execute()
 [source,python]
 .Publish after subscribe connect, read message and unsubscribe using SubscribeListener
 ----
+from pubnub.pubnub_asyncio import SubscribeListener
+
 my_listener = SubscribeListener()
 pubnub.add_listener(my_listener)
 

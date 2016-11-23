@@ -121,7 +121,7 @@ pubnub = PubNubTornado(pnconfig)
 .Adding listeners
 ----
 from pubnub.callbacks import SubscribeCallback
-from pubnub.enums import PNStatusCategory
+from pubnub.enums import PNOperationType, PNStatusCategory
 
 class MySubscribeCallback(SubscribeCallback):
     def status(self, pubnub, status):
@@ -250,6 +250,8 @@ pubnub.subscribe().channels('my_channel').execute()
 [source,python]
 .Publish a message to a channel:
 ----
+from tornado import gen
+
 @gen.coroutine
 def publish_snippet():
     def publish_callback(task):
@@ -274,6 +276,8 @@ NOTE: Requires that the `Presence` add-on is enabled for your key. How do I enab
 [source,python]
 .Get occupancy of who's here now on the channel:
 ----
+from tornado import gen
+
 @gen.coroutine
 def here_now():
     envelope = yield pubnub.here_now().channels('demo').include_uuids(True).future()

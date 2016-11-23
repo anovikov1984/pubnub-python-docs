@@ -34,6 +34,9 @@ also include the `publish_key` parameter.
 
 [source,python]
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_tornado import PubNubTornado
+
 pnconfig = PNConfiguration()
 
 pnconfig.subscribe_key = 'my_subscribe_key'
@@ -84,6 +87,11 @@ To get around this common case, we can take advantage of the optional connect ca
 [source,python]
 .Publish after subscribe connect using SubscribeCallback
 ----
+from pubnub.callbacks import SubscribeCallback
+from pubnub.enums import PNStatusCategory
+
+from tornado import gen
+
 @gen.coroutine
 def main():
     def publish_callback(*args):
@@ -114,6 +122,10 @@ def main():
 [source,python]
 .Publish after subscribe connect, read message and unsubscribe using SubscribeListener
 ----
+from pubnub.pubnub_tornado import SubscribeListener
+
+from tornado import gen
+
 @gen.coroutine
 def main():
     my_listener = SubscribeListener()

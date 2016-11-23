@@ -8,6 +8,9 @@ TODO: rename 'setSecure' => 'ssl' < in python it's not a method but a field
 [source,python]
 .To initialize with the secret key:
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_asyncio import PubNubAsyncio
+
 pnconfig = PNConfiguration()
 
 pnconfig.publish_key = "my_publish_key"
@@ -22,6 +25,8 @@ pubnub = PubNubAsyncio(pnconfig)
 [source,python]
 .To initialize with the auth key:
 ----
+from pubnub.pnconfiguration import PNConfiguration
+
 pnconfig = PNConfiguration()
 pnconfig.auth_key = "my_authkey"
 ----
@@ -29,6 +34,9 @@ pnconfig.auth_key = "my_authkey"
 [source,python]
 .PubNub Access Manager - Administrative-side Configuration:
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_asyncio import PubNubAsyncio
+
 pnconfig = PNConfiguration()
 
 pnconfig.subscribe_key = "my_subscribe_key"
@@ -71,6 +79,9 @@ envelope = await pubnub.grant()\
 [source,python]
 .Handling permissions denied error
 ----
+from pubnub.callbacks import SubscribeCallback
+from pubnub.enums import PNStatusCategory
+
 class MyListener(SubscribeCallback):
     def presence(self, pubnub, presence):
         pass
@@ -113,6 +124,9 @@ envelope = await pubnub.revoke()\
 [source,python]
 .Message layer encryption AES256
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_asyncio import PubNubAsyncio
+
 pnconfig = PNConfiguration()
 
 pnconfig.publish_key = "my_pub_key"
@@ -125,6 +139,9 @@ pubnub = PubNubAsyncio(pnconfig)
 [source,python]
 .TLS/SSL
 ----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub_asyncio import PubNubAsyncio
+
 pnconfig = PNConfiguration()
 
 pnconfig.publish_key = "my_pub_key"
