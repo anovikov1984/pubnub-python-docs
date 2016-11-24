@@ -3,27 +3,27 @@
 [source, python]
 ----
 from pubnub.pnconfiguration import PNConfiguration
-from pubnub.pubnub_asyncio import PubNubAsyncio
+from pubnub.pubnub_tornado import PubNubTornado
 
 pnconf = PNConfiguration()
 pnconf.publish_key = "..."
 pnconf.subscribe_key = "..."
 pnconf.uuid = "0c2340c2-8cc1-4898-8868-444ba77d02d2::web"
 
-pubnub = PubNubAsyncio(pnconf)
+pubnub = PubNubTornado(pnconf)
 ----
 
 [source, python]
 ----
 from pubnub.pnconfiguration import PNConfiguration
-from pubnub.pubnub_asyncio import PubNubAsyncio
+from pubnub.pubnub_tornado import PubNubTornado
 
 pnconf = PNConfiguration()
 pnconf.publish_key = "..."
 pnconf.subscribe_key = "..."
 pnconf.uuid = "user-a"
 
-pubnub = PubNubAsyncio(pnconf)
+pubnub = PubNubTornado(pnconf)
 ----
 
 [source, python]
@@ -37,7 +37,7 @@ data = {
 }
 
 try:
-    result = await pubnub.publish()\
+    result = yield pubnub.publish()\
          .message(data)\
          .channel("ch-user-b-present")\
          .future()
@@ -52,7 +52,7 @@ except PubNubException as e:
 ----
 
 try:
-    result = await pubnub.add_channel_to_channel_group()\
+    result = yield pubnub.add_channel_to_channel_group()\
          .channel_group("cg-user-a-friends")\
          .channels("ch-user-b-present")\
          .future()
@@ -62,7 +62,7 @@ except PubNubException as e:
     print("Operation failed w/ status: %s" % e)
 
 try:
-    result = await pubnub.add_channel_to_channel_group()\
+    result = yield pubnub.add_channel_to_channel_group()\
          .channel_group("cg-user-a-status-feed")\
          .channels("ch-user-b-status")\
          .future()
@@ -73,7 +73,7 @@ except PubNubException as e:
 
 
 try:
-    result = await pubnub.add_channel_to_channel_group()\
+    result = yield pubnub.add_channel_to_channel_group()\
          .channel_group("cg-user-b-friends")\
          .channels("ch-user-a-present")\
          .future()
@@ -83,7 +83,7 @@ except PubNubException as e:
     print("Operation failed w/ status: %s" % e)
 
 try:
-    result = await pubnub.add_channel_to_channel_group()\
+    result = yield pubnub.add_channel_to_channel_group()\
          .channel_group("cg-user-b-status-feed")\
          .channels("ch-user-a-status")\
          .future()
@@ -96,7 +96,7 @@ except PubNubException as e:
 [source, python]
 ----
 try:
-    result = await pubnub.list_channels_in_channel_group()\
+    result = yield pubnub.list_channels_in_channel_group()\
          .channel_group("cg-user-a-friends")\
          .future()
 
@@ -109,7 +109,7 @@ except PubNubException as e:
 
 
 try:
-    result = await pubnub.here_now()\
+    result = yield pubnub.here_now()\
         .channels("cg-user-a-status") \
         .future()
 
