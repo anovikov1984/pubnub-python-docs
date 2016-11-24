@@ -1,0 +1,154 @@
+= Advanced Channel Groups
+
+[source, python]
+----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNubAsyncio
+
+pnconf = PNConfiguration()
+pnconf.publish_key = "..."
+pnconf.subscribe_key = "..."
+pnconf.uuid = "0c2340c2-8cc1-4898-8868-444ba77d02d2::web"
+
+pubnub = PubNubAsyncio(pnconf)
+----
+
+[source, python]
+----
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNubAsyncio
+
+pnconf = PNConfiguration()
+pnconf.publish_key = "..."
+pnconf.subscribe_key = "..."
+pnconf.uuid = "user-a"
+
+pubnub = PubNubAsyncio(pnconf)
+----
+
+[source, python]
+----
+import time
+
+data = {
+  'author': 'user-a',
+  'status': 'I am reading about Advanced Channel Groups!',
+  'timestamp': time.time()
+}
+
+try:
+    result = await pubnub.publish()\
+         .message(data)\
+         .channel("ch-user-b-present")\
+         .future()
+
+    print("Message published with timetoken %s" % result.timetoken)
+except PubNubException as e:
+    print("Operation failed w/ status: %s" % e)
+----
+
+[source, python]
+.Friending
+----
+
+try:
+    result = await pubnub.add_channel_to_channel_group()\
+         .channel_group("cg-user-a-friends")\
+         .channels("ch-user-b-present")\
+         .future()
+
+    print("Channel added to channel group")
+except PubNubException as e:
+    print("Operation failed w/ status: %s" % e)
+
+try:
+    result = await pubnub.add_channel_to_channel_group()\
+         .channel_group("cg-user-a-status-feed")\
+         .channels("ch-user-b-status")\
+         .future()
+
+    print("Channel added to channel group")
+except PubNubException as e:
+    print("Operation failed w/ status: %s" % e)
+
+
+try:
+    result = await pubnub.add_channel_to_channel_group()\
+         .channel_group("cg-user-b-friends")\
+         .channels("ch-user-a-present")\
+         .future()
+
+    print("Channel added to channel group")
+except PubNubException as e:
+    print("Operation failed w/ status: %s" % e)
+
+try:
+    result = await pubnub.add_channel_to_channel_group()\
+         .channel_group("cg-user-b-status-feed")\
+         .channels("ch-user-a-status")\
+         .future()
+
+    print("Channel added to channel group")
+except PubNubException as e:
+    print("Operation failed w/ status: %s" % e)
+----
+
+[source, python]
+----
+try:
+    result = pubnub.list_channels_in_channel_group()\
+         .channel_group("cg-user-a-friends")\
+         .future()
+
+    print("FRIEND LIST:")
+
+    for channel in result.channels:
+        print(channel)
+except PubNubException as e:
+    print("Operation failed w/ status: %s" % e)
+
+
+try:
+    result = pubnub.here_now()\
+        .channels("cg-user-a-status") \
+        .future()
+
+    print("ONLINE NOW: %d" % result.total_occupancy)
+
+except PubNubException as e:
+    print("Operation failed w/ status: %s" % e)
+
+
+class PresenceListener(SubscribeCallback):
+    def status(self, pubnub, status):
+        pass
+
+    def message(self, pubnub, message):
+        pass
+
+    def presence(self, pubnub, presence):
+        print("FRIEND PRESENCE: %s" % presence)
+
+my_listener = PresenceListener()
+
+pubnub.add_listener(my_listener)
+
+pubnub.subscribe().channel_groups("cg-user-a-friends").with_presence().execute()
+----
+
+[source, python]
+----
+class MessageListener(SubscribeCallback):
+    def status(self, pubnub, status):
+        pass
+
+    def message(self, pubnub, message):
+        print("MESSAGE: %s" % message)
+
+    def presence(self, pubnub, presence):
+        pass
+
+pubnub.add_listener(my_listener)
+
+pubnub.subscribe().channel_groups("cg-user-a-friends").execute()
+----
