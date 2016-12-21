@@ -156,3 +156,13 @@ pubnub.unsubscribe().channels("my_channel").execute()
 ----
 
 Like subscribe(), unsubscribe() can be called multiple times to successively remove different channels from the active subscription list.
+
+== RECONNECTION POLICIES
+
+Python SDK has three types of Reconnection Policies when there is a network or internet issue.
+
+* (default) `PNReconnectionPolicy.NONE` - indicates that `NO` action will taken when there is a network or internet issue.
+* `PNReconnectionPolicy.LINEAR` - SDK will try to reconnect each 3 seconds.
+* `PNReconnectionPolicy.EXPONENTIAL` - SDK uses the Exponential Backoff algorithm to reconnect when
+ there is a network or internet issue. SDK uses `MINEXPONENTIALBACKOFF` = 1 second and
+  `MAXEXPONENTIALBACKOFF` = 32 seconds. See: https://en.wikipedia.org/wiki/Exponential_backoff for more details.
