@@ -91,6 +91,45 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
 ----
 
+== Builders
+There are two ways to invoke callbacks in PubNub Python V4 SDK for `aiohttp`:
+
+* Using `result()`. The builder returns a future that yields an only result, no state available on success call.
+  Exceptions in this builder are raised explicitly. `status` field of an error is populated with
+  an associated status object.
+
+[source,python]
+----
+try:
+    result = yield from pubnub.publish().message('hey').channel('blah').result()
+    print(result)
+except PubNubException as e:
+    print("PubNubException: %s" % e)
+    print("category id: #%d" % e.status.category)
+    print("operation id: #%d" % e.status.operation)
+    _handle_error(e)
+except Exception as e:
+    print("Error: %s" % e)
+    _handle_error(e)
+----
+* Using `future()`. The builder returns a future that yields a message envelope that wraps both a result
+ (the same as in `result()` call) and a state objects. Exception, if any, will not be raised explicitly
+  and you should check for it using `e.is_error()` helper. To access original exception value use `e.value()` method.
+
+[source,python]
+----
+e = yield from pubnub.publish().message('hey').channel('blah').future()
+
+if e.is_error():
+    print("Error: %s" % e)
+    print("category id: #%d" % e.status.category)
+    print("operation id: #%d" % e.status.operation)
+    _handle_error(e)
+else:
+    print(e.result)
+----
+
+
 == Copy and paste examples
 In addition to the Hello World sample code, we also provide some copy and paste snippets of common
 API functions:
