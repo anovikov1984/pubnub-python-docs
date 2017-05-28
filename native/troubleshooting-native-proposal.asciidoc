@@ -1,0 +1,108 @@
+== Troubleshooting PubNub Python Native SDK
+
+[source, python]
+.Use this code to enabling logging:
+----
+import pubnub
+import logging
+
+pubnub.set_stream_logger('pubnub', logging.DEBUG)
+----
+
+== How to find the version of my SDK
+You can access your SDK version via constant:
+
+[source, python]
+----
+from pubnub import PubNub
+
+PubNub.SDK_VERSION
+----
+
+=== Error handling with sync()
+
+In case of `sync()` calls errors will be wrapped out
+by either `Envelope` or `PubNubAsyncioException` which
+both implement two object fields:
+
+* e.result - request result object in case of success, otherwise `None`
+* e.status - `PNStatus` object with useful information about the finished request.
+You may check if it was an error or success using `e.is_error()` helper.
+
+[source, python]
+.sync() usage
+----
+e = pubnub.publish().channel("my_channel").message("hello!").sync()
+if e.is_error():
+    print("Error %s" % str(e))
+    print("Error category #%d" % e.status.category)
+    return
+else:
+    print(str(e.result))
+----
+
+=== Error handling with result()
+
+`result()` calls will return you just a result of the request without any state information.
+Errors should be caught using try/except blocks. For server-side errors
+a `e.status` field is populated to provide you more information about the request:
+
+[source, python]
+----
+def callback(result, status):
+    if status.is_error():
+        print("Error %s" % str(status.error_data.exception))
+        print("Error category #%d" % status.category)
+    else:
+        print(str(result))
+
+pubnub.publish().channel("my_channel").message("hello!").async(callback)
+----
+
+=== Error handling with async()
+
+`async()` call lets you check for errors using
+`status.is_error()` helper:
+
+[source, python]
+----
+def callback(result, status):
+    if status.is_error():
+        print("Error %s" % str(status.error_data.exception))
+        print("Error category #%d" % status.category)
+    else:
+        print(str(result))
+----
+
+
+=== Errors in subscribe requests
+
+== General status categories
+There is set of error categories which is returned by PubNub client through API completion blocks or delegate callbacks. Access to category can be done using status category property.
+
+Delegate callbacks related to subscribe API usage and allow to handle real-time updates and errors.
+
+
+====== PUBLISH
+
+|===
+| Category | Description
+
+| PNAccessDeniedCategory | The SDK will announce this error when the PAM (PubNub Access Manager) does not allow the publish to a channel.
+| PNBadRequestCategory | PubNub API server was unable to parse SDK request correctly. A big chance of internal SDK error, so let us know if you stumbled into it.
+| PNStatusCategory.PNAcknowledgmentCategory | Default category for successfully completed transactional request
+| PNTimeoutCategory | Processing has failed because of request time out.
+
+|===
+
+====== SUBSCRIPTION
+
+|===
+| Category | Description
+
+| PNTimeoutCategory | Processing has failed because of request time out.
+| PNBadRequestCategory | PubNub API server was unable to parse your request correctly.
+| PNReconnectedCategory | Subscription loop has been reconnected due some reasons
+| PNCancelledCategory | Request was cancelled by user
+| PNUnknownCategory | No specific category was assigned to the request
+|===
