@@ -1,0 +1,76 @@
+== Troubleshooting PubNub Python Native SDK
+
+[source, python]
+.Use this code to enable logging:
+----
+import pubnub
+import logging
+
+pubnub.set_stream_logger('pubnub', logging.DEBUG)
+----
+
+== How to find the version of my SDK
+You can access your SDK version via constant:
+
+[source, python]
+----
+from pubnub import PubNubTwisted
+
+PubNubTwisted.SDK_VERSION
+----
+
+=== Error handling with deferred()
+
+In case of `deferred()` calls, you should add error callback via
+`addErrback` to returned deferred. Errors that will be passed to given errback
+will wrapped out by either `TwistedEnvelope` or `PubNubTwistedException` which
+both implement two object fields:
+
+* e.result - a request result object in case of success, otherwise `None`
+* e.status - `PNStatus` object with useful information about the finished request.
+You may check if it was an error or a success using `e.is_error()` helper.
+
+[source, python]
+.deferred() usage
+----
+def publish():
+    def succ(envelope):
+        print(str(envelope.result))
+
+    def errback(error):
+        print("Error %s" % str(e))
+        print("Error category #%d" % e.status.category)
+
+    pubnub.publish().channel("my_channel").message("hello!").deferred().addCallback(succ).addErrback(errback)
+
+----
+
+== General status categories
+There is set of error categories which is returned by PubNub client through API completion blocks or delegate callbacks. Access to category can be done using status category property.
+
+Delegate callbacks related to subscribe API usage and allow to handle real-time updates and errors.
+
+
+====== PUBLISH
+
+|===
+| Category | Description
+
+| PNAccessDeniedCategory | The SDK will announce this error when the PAM (PubNub Access Manager) does not allow the publish to a channel.
+| PNBadRequestCategory | PubNub API server was unable to parse SDK request correctly. A big chance of internal SDK error, so let us know if you stumbled into it.
+| PNAcknowledgmentCategory | Default category for successfully completed transactional request
+| PNTimeoutCategory | Processing has failed because of request time out.
+
+|===
+
+====== SUBSCRIPTION
+
+|===
+| Category | Description
+
+| PNTimeoutCategory | Processing has failed because of request time out.
+| PNBadRequestCategory | PubNub API server was unable to parse your request correctly.
+| PNReconnectedCategory | Subscription loop has been reconnected due some reasons
+| PNCancelledCategory | Request was cancelled by user
+| PNUnknownCategory | No specific category was assigned to the request
+|===
