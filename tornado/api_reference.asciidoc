@@ -1040,6 +1040,32 @@ envelope = yield pubnub.grant().\
     .future()
 ----
 
+[source, python]
+.6. Application level grant:
+----
+envelope = yield pubnub.grant().\
+    read(True).write(True).\
+    .future()
+----
+
+[source, python]
+.7. Channel level grant:
+----
+envelope = yield pubnub.grant().channels("my_channel").\
+    read(True).write(True).\
+    .future()
+----
+
+[source, python]
+.8. User level grant:
+----
+envelope = yield pubnub.grant().channels("my_channel").\
+    auth_keys("my_authkey").\
+    read(True).write(True).\
+    ttl(5).\
+    .future()
+----
+
 == Adding Channels to Channel Group
 === Description
 This function adds a channel to a channel group.

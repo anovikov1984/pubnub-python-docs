@@ -1076,6 +1076,35 @@ d = pubnub.grant().\
 d.addCallback(my_callback)
 ----
 
+[source, python]
+.6. Application level grant:
+----
+d = pubnub.grant().\
+    read(True).write(True).\
+    .deferred()
+d.addCallback(my_callback)
+----
+
+[source, python]
+.7. Channel level grant:
+----
+d = pubnub.grant().channels("my_channel").\
+    read(True).write(True).\
+    .deferred()
+d.addCallback(my_callback)
+----
+
+[source, python]
+.8. User level grant:
+----
+d = pubnub.grant().channels("my_channel").\
+    auth_keys("my_authkey").\
+    read(True).write(True).\
+    ttl(5).\
+    .deferred()
+d.addCallback(my_callback)
+----
+
 == Adding Channels to Channel Group
 === Description
 This function adds a channel to a channel group.
