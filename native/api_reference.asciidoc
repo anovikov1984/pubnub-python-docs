@@ -391,48 +391,30 @@ pubnub.subscribe().channels("my_channel").with_presence().execute()
 
 ==== Sample responses
 ===== Join event
-[source, json]
+[source, python]
 ----
-{
-    "action": "join",
-    "timestamp": 1345546797,
-    "uuid": "175c2c67-b2a9-470d-8f4b-1db94f90e39e",
-    "occupancy": 2
-}
-----
-===== Join event
-[source, json]
-----
-{
-    "action": "join",
-    "timestamp": 1345546797,
-    "uuid": "175c2c67-b2a9-470d-8f4b-1db94f90e39e",
-    "occupancy": 2
-}
+if envelope.event == 'join':
+    envelope.uuid # 175c2c67-b2a9-470d-8f4b-1db94f90e39e
+    envelope.timestamp # 1345546797
+    envelope.occupancy # 2
 ----
 
 ===== Timeout event
-[source, json]
+[source, python]
 ----
-{
-    "action": "timeout",
-    "timestamp": 1345549797,
-    "uuid": "76c2c571-9a2b-d074-b4f8-e93e09f49bd",
-    "occupancy": 0
-}
+if envelope.event == 'timeout':
+    envelope.uuid # 175c2c67-b2a9-470d-8f4b-1db94f90e39e
+    envelope.timestamp # 1345546797
+    envelope.occupancy # 0
 ----
 
 ===== Custom Presence Event
-[source, json]
+[source, python]
 ----
-{
-    "action": "state-change",
-    "uuid": "76c2c571-9a2b-d074-b4f8-e93e09f49bd",
-    "timestamp": 1345549797,
-    "data": {
-        "isTyping": true
-    }
-}
+if envelope.event == 'state-change':
+    envelope.uuid # 76c2c571-9a2b-d074-b4f8-e93e09f49bd
+    envelope.timestamp # 1345546797
+    envelope.user_metadata # {'is_typing': True}
 ----
 
 [source, python]
@@ -506,12 +488,13 @@ pubnub.unsubscribe().channels("my_channel").execute()
 NOTE: The response of the call is handled by adding a Listener. Please see the Listeners section for more details. Listeners should be added before calling the method.
 
 === Response from server
-[source, json]
+[source, python]
 .The output below demonstrates the response to a successful call:
 ----
-{
-    "action" : "leave"
-}
+if envelope.event == 'leave':
+    envelope.uuid # 175c2c67-b2a9-470d-8f4b-1db94f90e39e
+    envelope.timestamp # 1345546797
+    envelope.occupancy # 2
 ----
 
 === Other examples
@@ -669,46 +652,24 @@ envelope = pubnub.here_now().channels("my_channel").\
     include_uuids(True).include_state(True).sync()
 ----
 
-[source, json]
+[source, python]
 .Example response
 ----
 {
-    "status" : 200,
-    "message" : "OK",
-    "service" : "Presence",
-    "uuids" : [
-        {
-            "uuid" : "myUUID0"
-        },
-        {
-            "state" : {
-                "abcd" : {
-                    "age" : 15
+    total_channels: 1,
+    channels: [{
+        channel_name: "my_channel",
+        occupancy: 1,
+        occupants: [{
+            uuid: "myUuid1"
+            state: {
+                "abcd": {
+                    "age": 15
                 }
-            },
-            "uuid" : "myUUID1"
-        },
-        {
-            "uuid" : "b9eb408c-bcec-4d34-b4c4-fabec057ad0d"
-        },
-        {
-            "state" : {
-                "abcd" : {
-                    "age" : 15
-                }
-            },
-            "uuid" : "myUUID2"
-        },
-        {
-            "state" : {
-                "abcd" : {
-                    "age" : 24
-                }
-            },
-            "uuid" : "myUUID9"
-        }
-    ],
-    "occupancy" : 5
+            }
+        }]
+    }],
+    total_occupancy: 1
 }
 ----
 
@@ -719,17 +680,17 @@ envelope = pubnub.here_now().channels("my_channel").\
     include_uuids(False).include_state(False).sync()
 ----
 
-[source, json]
+[source, python]
 .Example response
 ----
 {
-    "channels": {
-        "my_channel": {
-            "occupancy": 3
-        }
-    },
-    "total_channels": 1,
-    "total_occupancy": 3
+    total_channels: 1,
+    channels: [{
+        channel_name: "my_channel",
+        occupancy: 3,
+        occupants: []
+    }],
+    total_occupancy: 3
 }
 ----
 
@@ -739,27 +700,26 @@ envelope = pubnub.here_now().channels("my_channel").\
 envelope = pubnub.here_now().include_uuids(True).include_state(False).sync()
 ----
 
-[source, json]
+[source, python]
 .Example response
 ----
 {
-    "total_channels" : 2,
-    "total_occupancy" : 3,
-    "channels" : {
-        "lobby" : {
-            "occupancy" : 1,
-            "uuids" : [
-                "dara01"
-            ]
-        },
-        "game01" : {
-            "occupancy" : 2,
-            "uuids" : [
-                "jason01",
-                "jason02"
-            ]
-        }
-    }
+    total_channels: 2,
+    channels: [{
+        channel_name: "my_channel",
+        occupancy: 1,
+        occupants: [{
+            uuid: "data01",
+            state: None
+        }]
+    },{
+        occupancy: 2,
+        occupants: [{
+            uuid: "jason01",
+            state: None
+        }]
+    }],
+    total_occupancy: 3
 }
 ----
 
@@ -770,17 +730,17 @@ envelope = pubnub.here_now().include_uuids(True).include_state(False).sync()
 envelope = pubnub.here_now().include_uuids(True).include_state(True).sync()
 ----
 
-[source, json]
+[source, python]
 .Example response
 ----
 {
-    "channels": {
-        "my_channel": {
-            "occupancy": 3
-        }
-    },
-    "total_channels": 1,
-    "total_occupancy": 3
+    total_channels: 1,
+    channels: [{
+        channel_name: "my_channel",
+        occupancy: 3,
+        occupants: []
+    }],
+    total_occupancy: 3
 }
 ----
 
@@ -791,12 +751,38 @@ envelope = pubnub.here_now().channel_groups(['cg1', 'cg2', 'cg3']).\
     include_uuids(True).include_state(True).sync()
 ----
 
-[source, json]
+[source, python]
 .Example response
 ----
 {
-    "occupancy" : 4,
-    "uuids" : ["123123234t234f34fq3dq", "143r34f34t34fq34q34q3", "23f34d3f4rq34r34rq23q", "w34tcw45t45tcw435tww3"]
+    total_channels: 1,
+    channels: [{
+        channel_name: "my_channel",
+        occupancy: 1,
+        occupants: [{
+            uuid: "143r34f34t34fq34q34q3",
+            state: None
+        },{
+        occupancy: 1,
+        occupants: [{
+            uuid: "123123234t234f34fq3dq",
+            state: None
+        }]
+        },{
+            occupancy: 1,
+            occupants: [{
+                uuid: "23f34d3f4rq34r34rq23q",
+                state: None
+            }]
+        },{
+            occupancy: 1,
+            occupants: [{
+                uuid: "w34tcw45t45tcw435tww3",
+                state: None
+            }]
+        }]
+    }],
+    total_occupancy: 4
 }
 ----
 
@@ -1213,14 +1199,26 @@ PNHistoryItemResult:
 envelope = pubnub.history().channel("my_channel").count(3).reverse(True).sync()
 ----
 
-[source, json]
+[source, python]
 .Response
 ----
-[
-    ["Pub1","Pub2","Pub3"],
-    13406746729185766,
-    13406746780720711
-]
+{
+    end_timetoken: 13406746729185766,
+    start_timetoken: 13406746780720711,
+    messages: [{
+        crypto: None,
+        entry: 'Pub1',
+        timetoken: None
+    },{
+        crypto: None,
+        entry: 'Pub2',
+        timetoken: None
+    },{
+        crypto: None,
+        entry: 'Pub2',
+        timetoken: None
+    }]
+}
 ----
 
 
@@ -1237,11 +1235,23 @@ pubnub.history()\
 [source, python]
 .Response
 ----
-[
-    ["Pub3","Pub4","Pub5"],
-    13406746780720711,
-    13406746845892666
-]
+{
+    end_timetoken: 13406746729185766,
+    start_timetoken: 13406746780720711,
+    messages: [{
+        crypto: None,
+        entry: 'Pub4',
+        timetoken: None
+    },{
+        crypto: None,
+        entry: 'Pub5',
+        timetoken: None
+    },{
+        crypto: None,
+        entry: 'Pub6',
+        timetoken: None
+    }]
+}
 ----
 
 [source, python]
@@ -1256,14 +1266,26 @@ pubnub.history()\
     .sync()
 ----
 
-[source, json]
+[source, python]
 .Response
 ----
-[
-    ["Pub3","Pub4","Pub5"],
-    13406746780720711,
-    13406746845892666
-]
+{
+    end_timetoken: 13406746729185766,
+    start_timetoken: 13406746780720711,
+    messages: [{
+        crypto: None,
+        entry: 'Pub4',
+        timetoken: None
+    },{
+        crypto: None,
+        entry: 'Pub5',
+        timetoken: None
+    },{
+        crypto: None,
+        entry: 'Pub6',
+        timetoken: None
+    }]
+}
 ----
 
 [source, python]
