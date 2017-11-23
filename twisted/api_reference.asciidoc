@@ -1381,6 +1381,33 @@ d = pubnub.history()\
 d.addCallback(my_callback)
 ----
 
+== Delete messages from History
+=== Description
+Removes the messages from the history of a specific channel.
+
+=== Methods
+To `Delete Messages from History` you can use the following method(s) in the Python V4 SDK.
+
+pubnub.delete_messages().channel(string).start(int).end(int).future()
+|===
+| Parameter | Type | Required | Defaults | Description
+| channels | list | Yes | | Specifies `channels` to delete messages from.
+| start | int | Optional | | Time token delimiting the `start` of time slice (exclusive) to delete messages from.
+| end | list | Optional | | Time token delimiting the `end` of time slice (inclusive) to delete messages from.
+|===
+
+=== Basic example
+[source, python]
+----
+d = pubnub.delete_messages()\
+    .channel("my-ch")\
+    .start(123)\
+    .end(456)\
+    .future()
+
+d.addCallback(my_callback)
+----
+
 
 == Adding Device to Channel
 === Description
