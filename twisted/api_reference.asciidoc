@@ -479,20 +479,32 @@ pubnub.subscribe().channels("foo.*").execute()
 [source, python]
 .5. Wildcard subscribe to channels (Wildcard subscribes allow the client to subscribe to multiple channels using wildcard. E.g., if you subscribe to `a.*` you will get all messages for `a.b`, `a.c`, `a.x`. The wildcarded * portion refers to any portion of the channel string name after the `dot (.)`):
 ----
+from pubnub.pubnub_tornado import PubNubTornado
+from pubnub.pubnub_tornado import SubscribeListener
+
+class MySubscribeListener(SubscribeListener):
+    def __init__(self):
+        pass
+
+    def status(self, pubnub, status):
+        pass
+
+    def message(self, pubnub, message):
+        pass
+
+    def presence(self, pubnub, presence):
+        pass
+
 pubnub = PubNubTwisted(pnconfig)
 
-my_listener = SubscribeListener()
+my_listener = MySubscribeListener()
 pubnub.add_listener(my_listener)
 
 pubnub.subscribe().channels("my_channel").execute()
 
-my_listener.wait_for_connect()
-
 state = {'field_a': 'awesome', 'field_b': 10}
 d = pubnub.set_state().channels('awesome_channel').\
     channel_groups('awesome_channel_groups').state(state).deferred()
-    
-d.addCallback(my_callback)
 ----
 
 [source, python]

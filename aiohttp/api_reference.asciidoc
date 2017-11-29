@@ -443,17 +443,28 @@ pubnub.subscribe().channels("foo.*").execute()
 from pubnub.pubnub_asyncio import SubscribeListener
 from pubnub.pubnub_asyncio import PubNubAsyncio
 
-pubnub = PubNubAsyncio(pnconfig)
+class MySubscribeListener(SubscribeListener):
+    def __init__(self):
+        pass
 
-my_listener = SubscribeListener()
+    def status(self, pubnub, status):
+        pass
+
+    def message(self, pubnub, message):
+        pass
+
+    def presence(self, pubnub, presence):
+        pass
+
+pubnub = PubNubAsyncio(pnconfig())
+
+my_listener = MySubscribeListener()
 pubnub.add_listener(my_listener)
 
 pubnub.subscribe().channels("my_channel").execute()
 
-my_listener.wait_for_connect()
-
 state = {'field_a': 'awesome', 'field_b': 10}
-envelope = await pubnub.set_state().channels('awesome_channel').\
+envelope = yield pubnub.set_state().channels('my-channel'). \
     channel_groups('awesome_channel_groups').state(state).future()
 ----
 

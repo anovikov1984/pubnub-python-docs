@@ -426,20 +426,31 @@ pubnub.subscribe().channels("foo.*").execute()
 [source, python]
 .5. Subscribing with State (You can set state for a uuid during a subscribe by using the state parameter. Simply specify the desired key/value pairs as a JSON object.):
 ----
-from pubnub.pubnub import SubscribeListener
-from pubnub.pubnub import PubNub
+from pubnub.pubnub_asyncio import SubscribeListener
+from pubnub.pubnub_asyncio import PubNubAsyncio
+
+class MySubscribeListener(SubscribeListener):
+    def __init__(self):
+        pass
+
+    def status(self, pubnub, status):
+        pass
+
+    def message(self, pubnub, message):
+        pass
+
+    def presence(self, pubnub, presence):
+        pass
 
 pubnub = PubNub(pnconfig)
 
-my_listener = SubscribeListener()
+my_listener = MySubscribeListener()
 pubnub.add_listener(my_listener)
 
 pubnub.subscribe().channels("my_channel").execute()
 
-my_listener.wait_for_connect()
-
 state = {'field_a': 'awesome', 'field_b': 10}
-envelope = pubnub.set_state().channels('awesome_channel').\
+envelope = pubnub.set_state().channels('my_channel').\
     channel_groups('awesome_channel_groups').state(state).sync()
 ----
 
